@@ -3,7 +3,10 @@ import { NextResponse } from 'next/server';
 export async function POST(request) {
   try {
     const { businessName, email } = await request.json();
-    const embedScript = `<script src="https://localpulse-ai.vercel.app/widget.js" data-business="${encodeURIComponent(businessName)}"></script>`;
+    
+    // Safely encode script characters so email clients don't strip them
+    const rawScript = `<script src="https://localpulse-ai.vercel.app/widget.js" data-business="${encodeURIComponent(businessName)}"></script>`;
+    const safeScriptDisplay = rawScript.replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
     const resendResponse = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -14,12 +17,21 @@ export async function POST(request) {
       body: JSON.stringify({
         from: 'LocalPulse AI <onboarding@resend.dev>',
         to: [email],
-        subject: `Your LocalPulse AI Widget Code for ${businessName}`,
+        subject: `Your LocalPulse AI Setup for ${businessName}`,
         html: `
-          <h2>Welcome to LocalPulse AI!</h2>
-          <p>Paste the following script tag directly into your website HTML before the closing <code>&lt;/body&gt;</code> tag:</p>
-          <pre style="background:#f4f4f4; padding:12px; border-radius:6px;">${embedScript}</pre>
-          <p>Your review badge and quote capture system will appear automatically!</p>
+          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #334155;">
+            <h2 style="color: #0f172a;">Welcome to LocalPulse AI, ${businessName}!</h2>
+            <p>Your automated review widget and lead capture system are ready to activate.</p>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="https://localpulse-ai.vercel.app" style="background-color: #2563eb; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; display: inline-block;">
+                Access Your Dashboard & Widget
+              </a>
+            </div>
+
+            <p style="margin-top: 30px; font-size: 14px; color: #64748b;">If your web developer is installing it, provide them with this code snippet:</p>
+            <pre style="background:#f1f5f9; padding:12px; border-radius:6px; font-size: 13px; overflow-x: auto;">${safeScriptDisplay}</pre>
+          </div>
         `
       })
     });
