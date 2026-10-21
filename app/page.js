@@ -1,4 +1,4 @@
-'use client';
+ 'use client';
 
 import React, { useState } from 'react';
 
@@ -26,15 +26,15 @@ export function LocalPulseWidget({ businessName, placeId }) {
   };
 
   return (
-    <div style={{ fontFamily: 'sans-serif', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '16px', maxWidth: '360px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', backgroundColor: '#ffffff' }}>
+    <div style={{ fontFamily: 'sans-serif', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '20px', maxWidth: '380px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', backgroundColor: '#ffffff' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-        <h4 style={{ margin: 0, fontSize: '16px', color: '#0f172a' }}>{businessName} Reviews</h4>
-        <span style={{ backgroundColor: '#fef3c7', color: '#d97706', fontSize: '12px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '12px' }}>★ 5.0 Rated</span>
+        <h4 style={{ margin: 0, fontSize: '18px', color: '#0f172a' }}>{businessName} Reviews</h4>
+        <span style={{ backgroundColor: '#fef3c7', color: '#d97706', fontSize: '13px', fontWeight: 'bold', padding: '4px 10px', borderRadius: '12px' }}>★ 5.0 Rated</span>
       </div>
       
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
         {reviews.map((r, i) => (
-          <div key={i} style={{ backgroundColor: '#f8fafc', padding: '10px', borderRadius: '8px', fontSize: '13px' }}>
+          <div key={i} style={{ backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px', fontSize: '14px' }}>
             <div style={{ fontWeight: '600', color: '#334155' }}>{r.author}</div>
             <p style={{ margin: '4px 0 0 0', color: '#64748b' }}>"{r.text}"</p>
           </div>
@@ -42,19 +42,19 @@ export function LocalPulseWidget({ businessName, placeId }) {
       </div>
 
       <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '12px' }}>
-        <p style={{ margin: '0 0 8px 0', fontSize: '13px', fontWeight: '600', color: '#0f172a' }}>Need a Fast Quote?</p>
+        <p style={{ margin: '0 0 8px 0', fontSize: '14px', fontWeight: '600', color: '#0f172a' }}>Need a Fast Quote?</p>
         {submitted ? (
-          <div style={{ color: '#16a34a', fontSize: '13px', fontWeight: '500' }}>✓ Request sent! We will text you shortly.</div>
+          <div style={{ color: '#16a34a', fontSize: '14px', fontWeight: '500' }}>✓ Request sent! We will text you shortly.</div>
         ) : (
-          <form onSubmit={handleLeadSubmit} style={{ display: 'flex', gap: '6px' }}>
+          <form onSubmit={handleLeadSubmit} style={{ display: 'flex', gap: '8px' }}>
             <input 
               type="text" 
               placeholder="Your Phone or Question..." 
               value={leadText}
               onChange={(e) => setLeadText(e.target.value)}
-              style={{ flex: 1, padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12px' }}
+              style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '16px' }}
             />
-            <button type="submit" style={{ backgroundColor: '#2563eb', color: '#fff', border: 'none', borderRadius: '6px', padding: '8px 12px', fontSize: '12px', cursor: 'pointer', fontWeight: '600' }}>
+            <button type="submit" style={{ backgroundColor: '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', padding: '12px 16px', fontSize: '16px', cursor: 'pointer', fontWeight: '600' }}>
               Send
             </button>
           </form>
@@ -97,38 +97,38 @@ export default function LocalPulseSaaS() {
           {/* Sign Up Column */}
           <div>
             <h3 style={{ fontSize: '24px', margin: '0 0 12px 0' }}>Activate Your Widget</h3>
-            <p style={{ color: '#94a3b8', fontSize: '14px', marginBottom: '24px' }}>Start your 14-day trial. $49/mo after, cancel anytime.</p>
+            <p style={{ color: '#94a3b8', fontSize: '15px', marginBottom: '24px' }}>Start your 14-day trial. $49/mo after, cancel anytime.</p>
             
             {submitted ? (
-              <div style={{ padding: '16px', backgroundColor: '#166534', borderRadius: '8px', color: '#f0fdf4' }}>
-                🎉 <strong>Account Created!</strong> Check your email ({email}) for your instant embed script code.
+              <div style={{ padding: '16px', backgroundColor: '#166534', borderRadius: '8px', color: '#f0fdf4', fontSize: '15px' }}>
+                🎉 <strong>Account Created!</strong> Check your email ({email}) for your instant access link.
               </div>
             ) : (
               <form onSubmit={handleSignup} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div>
-                  <label style={{ fontSize: '12px', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>Business Name</label>
+                  <label style={{ fontSize: '14px', color: '#94a3b8', display: 'block', marginBottom: '6px' }}>Business Name</label>
                   <input 
                     type="text" 
                     required 
                     placeholder="e.g. Austin Mobile Auto Detail" 
                     value={businessName}
                     onChange={(e) => setBusinessName(e.target.value)}
-                    style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #475569', backgroundColor: '#0f172a', color: '#fff', boxSizing: 'border-box' }}
+                    style={{ width: '100%', padding: '14px', borderRadius: '8px', border: '1px solid #475569', backgroundColor: '#0f172a', color: '#fff', fontSize: '16px', boxSizing: 'border-box' }}
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '12px', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>Work Email Address</label>
+                  <label style={{ fontSize: '14px', color: '#94a3b8', display: 'block', marginBottom: '6px' }}>Work Email Address</label>
                   <input 
                     type="email" 
                     required 
                     placeholder="owner@yourbusiness.com" 
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #475569', backgroundColor: '#0f172a', color: '#fff', boxSizing: 'border-box' }}
+                    style={{ width: '100%', padding: '14px', borderRadius: '8px', border: '1px solid #475569', backgroundColor: '#0f172a', color: '#fff', fontSize: '16px', boxSizing: 'border-box' }}
                   />
                 </div>
-                <button type="submit" style={{ width: '100%', padding: '14px', backgroundColor: '#2563eb', color: '#fff', fontWeight: 'bold', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '16px' }}>
-                  Get Embed Code Now →
+                <button type="submit" style={{ width: '100%', padding: '16px', backgroundColor: '#2563eb', color: '#fff', fontWeight: 'bold', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '16px' }}>
+                  Get Instant Access →
                 </button>
               </form>
             )}
@@ -136,7 +136,7 @@ export default function LocalPulseSaaS() {
 
           {/* Live Preview Column */}
           <div>
-            <div style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', color: '#64748b', fontWeight: 'bold', marginBottom: '12px' }}>Live Widget Preview</div>
+            <div style={{ fontSize: '13px', textTransform: 'uppercase', letterSpacing: '1px', color: '#64748b', fontWeight: 'bold', marginBottom: '12px' }}>Live Widget Preview</div>
             <LocalPulseWidget businessName={businessName || "Your Business"} placeId="demo" />
           </div>
 
