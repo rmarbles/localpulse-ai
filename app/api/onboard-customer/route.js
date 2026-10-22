@@ -1,44 +1,53 @@
-import { NextResponse } from 'next/server';
+import { Resend } from 'resend';
 
-export async function POST(request) {
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+export async function POST(req) {
   try {
-    const { businessName, email } = await request.json();
-    
-    // Magic Dashboard Login Link
-    const dashboardUrl = `https://localpulse-ai.vercel.app?business=${encodeURIComponent(businessName)}&email=${encodeURIComponent(email)}`;
-    const embedScript = `<script src="https://localpulse-ai.vercel.app/widget.js" data-business="${encodeURIComponent(businessName)}"></script>`;
-    const safeScriptDisplay = embedScript.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const body = await req.json();
+    const { businessName, email, isDeveloperEmail, embedCode } = body;
 
-    await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.RESEND_API_KEY}`
-      },
-      body: JSON.stringify({
+    // Use your exact live Vercel URL
+    const appUrl = 'https://localpulse-ai.vercel.app';
+
+    if (isDeveloperEmail) {
+      // Sending installation instructions to the web developer
+      await resend.emails.send({
         from: 'LocalPulse AI <onboarding@resend.dev>',
-        to: [email],
-        subject: `Your LocalPulse AI Dashboard Link for ${businessName}`,
+        to: email,
+        subject: `Website Widget Setup Instructions for ${businessName}`,
         html: `
-          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; color: #334155;">
-            <h2 style="color: #0f172a;">Welcome to LocalPulse AI!</h2>
-            <p>Your review badge and quote capture widget are ready to activate for <strong>${businessName}</strong>.</p>
-            
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${dashboardUrl}" style="background-color: #2563eb; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; display: inline-block;">
-                Access Your Dashboard & Widget
-              </a>
-            </div>
-
-            <p style="font-size: 14px; color: #64748b;">Or copy your embed snippet directly:</p>
-            <pre style="background:#f1f5f9; padding:12px; border-radius:6px; font-size: 13px; overflow-x: auto;">${safeScriptDisplay}</pre>
-          </div>
+          <h2>LocalPulse AI Widget Setup Instructions</h2>
+          <p>Hi there,</p>
+          <p>Please add the following review widget snippet to the HTML of <strong>${businessName}</strong> before the closing <code>&lt;/body&gt;</code> tag:</p>
+          <pre style="background: #f1f5f9; padding: 12px; border-radius: 6px;">${embedCode}</pre>
+          <p>If you have any questions, reply directly to this email.</p>
         `
-      })
-    });
+      });
+    } else {
+      // Sending magic dashboard access link to the business owner
+      const magicLink = `${appUrl}/?business=${encodeURIComponent(businessName)}&email=${encodeURIComponent(email)}`;
 
-    return NextResponse.json({ success: true });
+      await resend.emails.send({
+        from: 'LocalPulse AI <onboarding@resend.dev>',
+        to: email,
+        subject: `Access Your LocalPulse AI Dashboard - ${businessName}`,
+        html: `
+          <h2>Welcome to LocalPulse AI, ${businessName}!</h2>
+          <p>Your 14-day free trial is active. You can manage your widget and view settings anytime using your personal dashboard link below:</p>
+          <p style="margin: 20px 0;">
+            <a href="${magicLink}" style="background-color: #2563eb; color: #ffffff; padding: 12px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">
+              Access Your Dashboard & Widget →
+            </a>
+          </p>
+          <p style="color: #64748b; font-size: 13px;">Or copy and paste this URL into your browser:<br>${magicLink}</p>
+        `
+      });
+    }
+
+    return Response.json({ success: true });
   } catch (error) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    console.error('Email error:', error);
+    return Response.json({ error: error.message }, { status: 500 });
   }
 }
