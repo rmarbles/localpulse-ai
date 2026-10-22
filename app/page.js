@@ -10,17 +10,21 @@ export function LocalPulseWidget({ businessName, primaryColor = '#2563eb' }) {
     { author: "Sarah M.", rating: 5, text: "Incredible service! Fast, professional, and reliable." },
     { author: "David K.", rating: 5, text: "Highly recommend! Arrived on time and went above and beyond." }
   ]);
-  const [leadText, setLeadText] = useState('');
+  const [leadQuestion, setLeadQuestion] = useState('');
+  const [leadPhone, setLeadPhone] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
   const handleLeadSubmit = async (e) => {
     e.preventDefault();
-    if (!leadText) return;
+    if (!leadQuestion || !leadPhone) {
+      alert("Please enter both your question and mobile phone number so we can text you your quote!");
+      return;
+    }
     
     await fetch('/api/lead-capture', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ leadText, businessName })
+      body: JSON.stringify({ leadText: `Question: ${leadQuestion} | Phone: ${leadPhone}`, businessName })
     });
     setSubmitted(true);
   };
@@ -44,19 +48,28 @@ export function LocalPulseWidget({ businessName, primaryColor = '#2563eb' }) {
       <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '12px' }}>
         <p style={{ margin: '0 0 8px 0', fontSize: '14px', fontWeight: '600', color: '#0f172a' }}>Need a Fast Quote?</p>
         {submitted ? (
-          <div style={{ color: '#16a34a', fontSize: '14px', fontWeight: '500' }}>✓ Request sent! We will text you shortly.</div>
+          <div style={{ color: '#16a34a', fontSize: '14px', fontWeight: '500' }}>✓ Quote request sent! We will text you shortly at {leadPhone}.</div>
         ) : (
-          <form onSubmit={handleLeadSubmit} style={{ display: 'flex', gap: '8px' }}>
+          <form onSubmit={handleLeadSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <input 
               type="text" 
-              placeholder="Your Phone or Question..." 
-              value={leadText}
-              onChange={(e) => setLeadText(e.target.value)}
-              style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '16px' }}
+              placeholder="What service do you need?" 
+              value={leadQuestion}
+              onChange={(e) => setLeadQuestion(e.target.value)}
+              style={{ padding: '10px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '14px' }}
             />
-            <button type="submit" style={{ backgroundColor: primaryColor, color: '#fff', border: 'none', borderRadius: '8px', padding: '12px 16px', fontSize: '16px', cursor: 'pointer', fontWeight: '600' }}>
-              Send
-            </button>
+            <div style={{ display: 'flex', gap: '6px' }}>
+              <input 
+                type="tel" 
+                placeholder="Mobile Phone # for SMS" 
+                value={leadPhone}
+                onChange={(e) => setLeadPhone(e.target.value)}
+                style={{ flex: 1, padding: '10px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '14px' }}
+              />
+              <button type="submit" style={{ backgroundColor: primaryColor, color: '#fff', border: 'none', borderRadius: '6px', padding: '10px 14px', fontSize: '14px', cursor: 'pointer', fontWeight: '600' }}>
+                Text Me
+              </button>
+            </div>
           </form>
         )}
       </div>
@@ -70,10 +83,10 @@ export function LocalPulseWidget({ businessName, primaryColor = '#2563eb' }) {
 function CustomerDashboard({ businessName, email, onLogout }) {
   const [googleUrl, setGoogleUrl] = useState('');
   const [widgetColor, setWidgetColor] = useState('#2563eb');
-  const [copied, setCopied] = useState(false);
+  const [copiedCode, setCopiedCode] = useState(false);
+  const [copiedEmail, setCopiedEmail] = useState(false);
   const [synced, setSynced] = useState(false);
   
-  // Set to true to simulate last 7 days of trial
   const [daysRemaining] = useState(14); 
 
   const embedCode = `<script src="https://localpulse-ai.vercel.app/widget.js" data-business="${encodeURIComponent(businessName)}" data-color="${widgetColor}"></script>`;
@@ -86,16 +99,19 @@ function CustomerDashboard({ businessName, email, onLogout }) {
     setSynced(true);
   };
 
-  const copyToClipboard = () => {
+  const copyCodeToClipboard = () => {
     navigator.clipboard.writeText(embedCode);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 3000);
+    setCopiedCode(true);
+    setTimeout(() => setCopiedCode(false), 3000);
   };
 
-  // Safely formatted mailto string for native email clients
-  const emailSubject = encodeURIComponent(`LocalPulse Widget Setup for ${businessName}`);
-  const emailBody = encodeURIComponent(`Hi,\n\nPlease add our review widget snippet to our website HTML before the closing </body> tag:\n\n${embedCode}\n\nThanks!`);
-  const mailtoUrl = `mailto:?subject=${emailSubject}&body=${emailBody}`;
+  const copyEmailTemplateToClipboard = () => {
+    const emailTemplate = `Subject: Please add LocalPulse Widget to our website\n\nHi,\n\nPlease paste this review widget script tag into our website HTML before the closing </body> tag:\n\n${embedCode}\n\nThanks!`;
+    navigator.clipboard.writeText(emailTemplate);
+    setCopiedEmail(true);
+    alert("✓ Developer email template copied to your clipboard!\n\nSimply open your email app and paste (Cmd+V or Ctrl+V) to send it to your web guy.");
+    setTimeout(() => setCopiedEmail(false), 3000);
+  };
 
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '40px 20px', fontFamily: 'sans-serif', color: '#1e293b' }}>
@@ -138,16 +154,16 @@ function CustomerDashboard({ businessName, email, onLogout }) {
             <pre style={{ backgroundColor: '#f1f5f9', padding: '14px', borderRadius: '8px', fontSize: '13px', overflowX: 'auto', border: '1px solid #e2e8f0' }}>{embedCode}</pre>
             
             <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
-              <button onClick={copyToClipboard} style={{ backgroundColor: '#2563eb', color: '#fff', padding: '12px 20px', borderRadius: '8px', border: 'none', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' }}>
-                {copied ? '✓ Code Copied!' : 'Copy Code'}
+              <button onClick={copyCodeToClipboard} style={{ backgroundColor: '#2563eb', color: '#fff', padding: '12px 20px', borderRadius: '8px', border: 'none', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' }}>
+                {copiedCode ? '✓ Code Copied!' : 'Copy Code'}
               </button>
-              <a href={mailtoUrl} style={{ padding: '12px 20px', borderRadius: '8px', border: '1px solid #cbd5e1', backgroundColor: '#fff', color: '#334155', textDecoration: 'none', fontWeight: 'bold', fontSize: '14px', display: 'inline-block' }}>
-                Email to My Web Developer
-              </a>
+              <button onClick={copyEmailTemplateToClipboard} style={{ padding: '12px 20px', borderRadius: '8px', border: '1px solid #cbd5e1', backgroundColor: '#fff', color: '#334155', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer' }}>
+                {copiedEmail ? '✓ Email Copied!' : 'Copy Developer Email'}
+              </button>
             </div>
           </div>
 
-          {/* Step 3: Conditional Offers (Shown in last 7 days of trial) */}
+          {/* Step 3: Conditional Offers */}
           {daysRemaining <= 7 ? (
             <div style={{ backgroundColor: '#f8fafc', padding: '24px', borderRadius: '12px', border: '1px solid #cbd5e1' }}>
               <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', color: '#0f172a' }}>Select Your Growth Plan</h3>
