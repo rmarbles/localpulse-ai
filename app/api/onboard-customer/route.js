@@ -7,7 +7,7 @@ export async function POST(request) {
     // Magic Dashboard Login Link
     const dashboardUrl = `https://localpulse-ai.vercel.app?business=${encodeURIComponent(businessName)}&email=${encodeURIComponent(email)}`;
     const embedScript = `<script src="https://localpulse-ai.vercel.app/widget.js" data-business="${encodeURIComponent(businessName)}"></script>`;
-    const safeScriptDisplay = embedScript.replace(/</g, '&lt;').replace/>/g, '&gt;');
+    const safeScriptDisplay = embedScript.replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
     await fetch('https://api.resend.com/emails', {
       method: 'POST',
