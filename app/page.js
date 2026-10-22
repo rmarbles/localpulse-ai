@@ -84,7 +84,8 @@ function CustomerDashboard({ businessName, email, onLogout }) {
   const [googleUrl, setGoogleUrl] = useState('');
   const [widgetColor, setWidgetColor] = useState('#2563eb');
   const [copiedCode, setCopiedCode] = useState(false);
-  const [copiedEmail, setCopiedEmail] = useState(false);
+  const [devEmail, setDevEmail] = useState('');
+  const [devEmailSent, setDevEmailSent] = useState(false);
   const [synced, setSynced] = useState(false);
   
   const [daysRemaining] = useState(14); 
@@ -105,12 +106,22 @@ function CustomerDashboard({ businessName, email, onLogout }) {
     setTimeout(() => setCopiedCode(false), 3000);
   };
 
-  const copyEmailTemplateToClipboard = () => {
-    const emailTemplate = `Subject: Please add LocalPulse Widget to our website\n\nHi,\n\nPlease paste this review widget script tag into our website HTML before the closing </body> tag:\n\n${embedCode}\n\nThanks!`;
-    navigator.clipboard.writeText(emailTemplate);
-    setCopiedEmail(true);
-    alert("✓ Developer email template copied to your clipboard!\n\nSimply open your email app and paste (Cmd+V or Ctrl+V) to send it to your web guy.");
-    setTimeout(() => setCopiedEmail(false), 3000);
+  const handleSendDevEmail = async (e) => {
+    e.preventDefault();
+    if (!devEmail) return;
+
+    await fetch('/api/onboard-customer', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        businessName, 
+        email: devEmail, 
+        isDeveloperEmail: true, 
+        embedCode 
+      })
+    });
+
+    setDevEmailSent(true);
   };
 
   return (
@@ -149,17 +160,34 @@ function CustomerDashboard({ businessName, email, onLogout }) {
           {/* Step 2: Widget Embed Code */}
           <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
             <h3 style={{ margin: '0 0 8px 0', fontSize: '18px' }}>2. Installation Code</h3>
-            <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#64748b' }}>Copy this script tag onto your website (Wix, Squarespace, WordPress, Webflow):</p>
+            <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#64748b' }}>Copy this script tag onto your website or email it straight to your web developer:</p>
             
             <pre style={{ backgroundColor: '#f1f5f9', padding: '14px', borderRadius: '8px', fontSize: '13px', overflowX: 'auto', border: '1px solid #e2e8f0' }}>{embedCode}</pre>
             
-            <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
-              <button onClick={copyCodeToClipboard} style={{ backgroundColor: '#2563eb', color: '#fff', padding: '12px 20px', borderRadius: '8px', border: 'none', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' }}>
-                {copiedCode ? '✓ Code Copied!' : 'Copy Code'}
-              </button>
-              <button onClick={copyEmailTemplateToClipboard} style={{ padding: '12px 20px', borderRadius: '8px', border: '1px solid #cbd5e1', backgroundColor: '#fff', color: '#334155', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer' }}>
-                {copiedEmail ? '✓ Email Copied!' : 'Copy Developer Email'}
-              </button>
+            <button onClick={copyCodeToClipboard} style={{ backgroundColor: '#2563eb', color: '#fff', padding: '12px 20px', borderRadius: '8px', border: 'none', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px', width: '100%', marginBottom: '16px' }}>
+              {copiedCode ? '✓ Code Copied to Clipboard!' : 'Copy Code'}
+            </button>
+
+            {/* Direct Email to Developer Box */}
+            <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '16px' }}>
+              <p style={{ margin: '0 0 8px 0', fontSize: '14px', fontWeight: '600', color: '#334155' }}>Have a Web Developer? Email them setup instructions:</p>
+              {devEmailSent ? (
+                <div style={{ color: '#16a34a', fontSize: '14px', fontWeight: '600' }}>✓ Setup instructions emailed to {devEmail}!</div>
+              ) : (
+                <form onSubmit={handleSendDevEmail} style={{ display: 'flex', gap: '8px' }}>
+                  <input 
+                    type="email" 
+                    required
+                    placeholder="developer@yourbusiness.com" 
+                    value={devEmail}
+                    onChange={(e) => setDevEmail(e.target.value)}
+                    style={{ flex: 1, padding: '10px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '14px' }}
+                  />
+                  <button type="submit" style={{ backgroundColor: '#0f172a', color: '#fff', border: 'none', borderRadius: '6px', padding: '10px 14px', fontSize: '14px', cursor: 'pointer', fontWeight: '600' }}>
+                    Send Instructions
+                  </button>
+                </form>
+              )}
             </div>
           </div>
 
