@@ -7,7 +7,7 @@ import React, { useState, useEffect } from 'react';
 // ==========================================
 export function LocalPulseWidget({ businessName, primaryColor = '#2563eb' }) {
   const [reviews] = useState([
-    { author: "Sarah M.", rating: 5, text: "Absolutely incredible service! Fast, professional, and reliable." },
+    { author: "Sarah M.", rating: 5, text: "Incredible service! Fast, professional, and reliable." },
     { author: "David K.", rating: 5, text: "Highly recommend! Arrived on time and went above and beyond." }
   ]);
   const [leadText, setLeadText] = useState('');
@@ -71,8 +71,17 @@ function CustomerDashboard({ businessName, email, onLogout }) {
   const [googleUrl, setGoogleUrl] = useState('');
   const [widgetColor, setWidgetColor] = useState('#2563eb');
   const [copied, setCopied] = useState(false);
+  const [synced, setSynced] = useState(false);
 
   const embedCode = `<script src="https://localpulse-ai.vercel.app/widget.js" data-business="${encodeURIComponent(businessName)}" data-color="${widgetColor}"></script>`;
+
+  const handleSync = () => {
+    if (!googleUrl) {
+      alert("Please paste your Google Maps link first!\n\nHow to find it:\n1. Open Google Maps\n2. Search for your business\n3. Click 'Share' and copy the link.");
+      return;
+    }
+    setSynced(true);
+  };
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(embedCode);
@@ -80,13 +89,16 @@ function CustomerDashboard({ businessName, email, onLogout }) {
     setTimeout(() => setCopied(false), 3000);
   };
 
+  // Safely formatted mailto link for developers
+  const mailtoUrl = `mailto:?subject=${encodeURIComponent(`LocalPulse Widget Setup for ${businessName}`)}&body=${encodeURIComponent(`Hi,\n\nPlease add our review widget snippet to our website HTML before the closing </body> tag:\n\n${embedCode}\n\nThanks!`)}`;
+
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '40px 20px', fontFamily: 'sans-serif', color: '#1e293b' }}>
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e2e8f0', paddingBottom: '20px', marginBottom: '30px' }}>
         <div>
           <h1 style={{ margin: 0, fontSize: '28px', color: '#0f172a' }}>{businessName} Dashboard</h1>
-          <p style={{ margin: '4px 0 0 0', color: '#64748b' }}>Account Email: <strong>{email}</strong> | <span style={{ color: '#16a34a', fontWeight: 'bold' }}>14-Day Free Trial Active</span></p>
+          <p style={{ margin: '4px 0 0 0', color: '#64748b' }}>Account: <strong>{email}</strong> | <span style={{ color: '#16a34a', fontWeight: 'bold' }}>14 Days Remaining in Trial</span></p>
         </div>
         <button onClick={onLogout} style={{ padding: '8px 16px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#fff', cursor: 'pointer' }}>Log Out</button>
       </div>
@@ -98,41 +110,52 @@ function CustomerDashboard({ businessName, email, onLogout }) {
           {/* Step 1: Connect Google Profile */}
           <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
             <h3 style={{ margin: '0 0 8px 0', fontSize: '18px' }}>1. Connect Google Business Profile</h3>
-            <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#64748b' }}>Paste your Google Maps link to sync live reviews.</p>
+            <p style={{ margin: '0 0 12px 0', fontSize: '14px', color: '#64748b' }}>Search your business on Google Maps, click <strong>Share</strong>, and paste your link below:</p>
             <input 
               type="text" 
-              placeholder="https://maps.google.com/..." 
+              placeholder="e.g. https://maps.app.goo.gl/..." 
               value={googleUrl}
               onChange={(e) => setGoogleUrl(e.target.value)}
               style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '15px', boxSizing: 'border-box', marginBottom: '12px' }}
             />
-            <button style={{ backgroundColor: '#0f172a', color: '#fff', padding: '10px 16px', borderRadius: '6px', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}>Sync Reviews Now</button>
+            <button onClick={handleSync} style={{ backgroundColor: '#0f172a', color: '#fff', padding: '12px 18px', borderRadius: '8px', border: 'none', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' }}>
+              {synced ? '✓ Google Reviews Connected' : 'Sync Reviews Now'}
+            </button>
           </div>
 
           {/* Step 2: Widget Embed Code */}
           <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
             <h3 style={{ margin: '0 0 8px 0', fontSize: '18px' }}>2. Installation Code</h3>
-            <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#64748b' }}>Copy and paste this script tag into your website HTML (Wix, Squarespace, WordPress, Webflow).</p>
+            <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#64748b' }}>Copy this script tag onto your website (Wix, Squarespace, WordPress, Webflow):</p>
             
             <pre style={{ backgroundColor: '#f1f5f9', padding: '14px', borderRadius: '8px', fontSize: '13px', overflowX: 'auto', border: '1px solid #e2e8f0' }}>{embedCode}</pre>
             
             <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
-              <button onClick={copyToClipboard} style={{ backgroundColor: '#2563eb', color: '#fff', padding: '12px 20px', borderRadius: '8px', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}>
+              <button onClick={copyToClipboard} style={{ backgroundColor: '#2563eb', color: '#fff', padding: '12px 20px', borderRadius: '8px', border: 'none', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' }}>
                 {copied ? '✓ Code Copied!' : 'Copy Code'}
               </button>
-              <a href={`mailto:developer@yourwebsite.com?subject=LocalPulse Widget Setup&body=Please paste this snippet onto our site: ${encodeURIComponent(embedCode)}`} style={{ padding: '12px 20px', borderRadius: '8px', border: '1px solid #cbd5e1', backgroundColor: '#fff', color: '#334155', textDecoration: 'none', fontWeight: 'bold', fontSize: '14px' }}>
+              <a href={mailtoUrl} style={{ padding: '12px 20px', borderRadius: '8px', border: '1px solid #cbd5e1', backgroundColor: '#fff', color: '#334155', textDecoration: 'none', fontWeight: 'bold', fontSize: '14px', display: 'inline-block' }}>
                 Email to My Web Developer
               </a>
             </div>
           </div>
 
-          {/* Step 3: Upgrade to Paid Plan */}
-          <div style={{ backgroundColor: '#eff6ff', padding: '24px', borderRadius: '12px', border: '1px solid #bfdbfe' }}>
-            <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', color: '#1e40af' }}>Subscription Status</h3>
-            <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#1e3a8a' }}>Your 14-day trial ends soon. Lock in your $49/month rate to keep receiving website leads uninterrupted.</p>
-            <a href="https://buy.stripe.com/test_placeholder" style={{ display: 'inline-block', backgroundColor: '#16a34a', color: '#fff', padding: '14px 24px', borderRadius: '8px', textDecoration: 'none', fontWeight: 'bold', fontSize: '16px' }}>
-              Activate Paid Plan ($49/mo) →
-            </a>
+          {/* Step 3: Strategic Offers */}
+          <div style={{ backgroundColor: '#f8fafc', padding: '24px', borderRadius: '12px', border: '1px solid #cbd5e1' }}>
+            <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', color: '#0f172a' }}>Select Your Growth Plan</h3>
+            <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#64748b' }}>Lock in your savings before your 14-day trial expires:</p>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <a href="https://buy.stripe.com/test_monthly" style={{ display: 'block', backgroundColor: '#ffffff', border: '1px solid #cbd5e1', padding: '14px', borderRadius: '8px', textDecoration: 'none', color: '#0f172a' }}>
+                <strong>Monthly Standard:</strong> $49/month
+              </a>
+              <a href="https://buy.stripe.com/test_3month" style={{ display: 'block', backgroundColor: '#eff6ff', border: '2px solid #2563eb', padding: '14px', borderRadius: '8px', textDecoration: 'none', color: '#1e40af' }}>
+                <strong>3-Month Pass:</strong> $99 one-time <span style={{ backgroundColor: '#dbeafe', color: '#1e40af', fontSize: '12px', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>SAVE $48</span>
+              </a>
+              <a href="https://buy.stripe.com/test_annual" style={{ display: 'block', backgroundColor: '#f0fdf4', border: '1px solid #86efac', padding: '14px', borderRadius: '8px', textDecoration: 'none', color: '#166534' }}>
+                <strong>6-Month VIP Pass:</strong> $245 one-time <span style={{ backgroundColor: '#dcfce7', color: '#15803d', fontSize: '12px', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>Pay 5 Months, Get 6th Month FREE</span>
+              </a>
+            </div>
           </div>
 
         </div>
@@ -162,78 +185,17 @@ function CustomerDashboard({ businessName, email, onLogout }) {
 }
 
 // ==========================================
-// 3. ADMIN FOUNDER PORTAL (FOR YOU)
-// ==========================================
-function AdminPortal() {
-  return (
-    <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '40px 20px', fontFamily: 'sans-serif', color: '#0f172a' }}>
-      <h1 style={{ fontSize: '32px', marginBottom: '8px' }}>Founder Executive Dashboard</h1>
-      <p style={{ color: '#64748b', marginBottom: '32px' }}>Real-time business performance & active client metrics.</p>
-
-      {/* Metrics Row */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginBottom: '40px' }}>
-        <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-          <div style={{ fontSize: '14px', color: '#64748b' }}>Total Signups</div>
-          <div style={{ fontSize: '36px', fontWeight: '800', color: '#2563eb', marginTop: '8px' }}>12</div>
-        </div>
-        <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-          <div style={{ fontSize: '14px', color: '#64748b' }}>Active Paid Clients</div>
-          <div style={{ fontSize: '36px', fontWeight: '800', color: '#16a34a', marginTop: '8px' }}>3</div>
-        </div>
-        <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-          <div style={{ fontSize: '14px', color: '#64748b' }}>Monthly Run Rate (MRR)</div>
-          <div style={{ fontSize: '36px', fontWeight: '800', color: '#0f172a', marginTop: '8px' }}>$147/mo</div>
-        </div>
-      </div>
-
-      <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-        <h3 style={{ margin: '0 0 16px 0' }}>Recent Client Activity</h3>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px', textAlign: 'left' }}>
-          <thead>
-            <tr style={{ borderBottom: '2px solid #e2e8f0', color: '#64748b' }}>
-              <th style={{ padding: '12px' }}>Business Name</th>
-              <th style={{ padding: '12px' }}>Email</th>
-              <th style={{ padding: '12px' }}>Status</th>
-              <th style={{ padding: '12px' }}>Plan</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
-              <td style={{ padding: '12px', fontWeight: 'bold' }}>Austin Mobile Detail</td>
-              <td style={{ padding: '12px' }}>owner@austindetail.com</td>
-              <td style={{ padding: '12px', color: '#16a34a' }}>Active</td>
-              <td style={{ padding: '12px' }}>$49/mo</td>
-            </tr>
-            <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
-              <td style={{ padding: '12px', fontWeight: 'bold' }}>Precision Roofing</td>
-              <td style={{ padding: '12px' }}>info@precisionroof.com</td>
-              <td style={{ padding: '12px', color: '#d97706' }}>Trial (Day 4)</td>
-              <td style={{ padding: '12px' }}>Free Trial</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
-
-// ==========================================
-// 4. MAIN SAAS LANDING PAGE
+// 3. MAIN SAAS LANDING PAGE
 // ==========================================
 export default function LocalPulseSaaS() {
   const [businessName, setBusinessName] = useState('');
   const [email, setEmail] = useState('');
   const [activeUser, setActiveUser] = useState(null);
-  const [viewAdmin, setViewAdmin] = useState(false);
 
   useEffect(() => {
-    // URL Parameter detection for magic login links from email
     const params = new URLSearchParams(window.location.search);
     const bName = params.get('business');
     const uEmail = params.get('email');
-    const isAdmin = params.get('admin');
-
-    if (isAdmin === 'true') setViewAdmin(true);
     if (bName && uEmail) setActiveUser({ businessName: bName, email: uEmail });
   }, []);
 
@@ -247,7 +209,6 @@ export default function LocalPulseSaaS() {
     setActiveUser({ businessName, email });
   };
 
-  if (viewAdmin) return <AdminPortal />;
   if (activeUser) return <CustomerDashboard businessName={activeUser.businessName} email={activeUser.email} onLogout={() => setActiveUser(null)} />;
 
   return (
@@ -257,12 +218,11 @@ export default function LocalPulseSaaS() {
           Turn Website Visitors Into Instant Local Clients
         </h1>
         <p style={{ fontSize: '18px', color: '#94a3b8', maxWidth: '700px', margin: '0 auto 40px auto', lineHeight: '1.6' }}>
-          Display verified 5-star Google reviews and an instant quote box directly on your website to increase leads by up to 30%.
+          Display verified 5-star Google reviews and an instant quote box directly on your website to increase leads on autopilot.
         </p>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', alignItems: 'center', textAlign: 'left', backgroundColor: '#1e293b', padding: '36px', borderRadius: '16px', border: '1px solid #334155' }}>
           
-          {/* Sign Up Column */}
           <div>
             <h3 style={{ fontSize: '24px', margin: '0 0 8px 0' }}>Activate Your Free Trial</h3>
             <p style={{ color: '#94a3b8', fontSize: '15px', marginBottom: '24px' }}>No credit card required. Setup takes under 60 seconds.</p>
@@ -296,7 +256,6 @@ export default function LocalPulseSaaS() {
             </form>
           </div>
 
-          {/* Live Preview Column */}
           <div>
             <div style={{ fontSize: '13px', textTransform: 'uppercase', letterSpacing: '1px', color: '#64748b', fontWeight: 'bold', marginBottom: '12px' }}>Live Widget Preview</div>
             <LocalPulseWidget businessName={businessName || "Your Business"} />
