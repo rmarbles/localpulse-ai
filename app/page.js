@@ -72,12 +72,15 @@ function CustomerDashboard({ businessName, email, onLogout }) {
   const [widgetColor, setWidgetColor] = useState('#2563eb');
   const [copied, setCopied] = useState(false);
   const [synced, setSynced] = useState(false);
+  
+  // Set to true to simulate last 7 days of trial
+  const [daysRemaining] = useState(14); 
 
   const embedCode = `<script src="https://localpulse-ai.vercel.app/widget.js" data-business="${encodeURIComponent(businessName)}" data-color="${widgetColor}"></script>`;
 
   const handleSync = () => {
     if (!googleUrl) {
-      alert("Please paste your Google Maps link first!\n\nHow to find it:\n1. Open Google Maps\n2. Search for your business\n3. Click 'Share' and copy the link.");
+      alert("Please paste your Google Maps link first!\n\nHow to find it:\n1. Click the Google Maps link above\n2. Search for your business\n3. Click 'Share' and copy the link.");
       return;
     }
     setSynced(true);
@@ -89,8 +92,10 @@ function CustomerDashboard({ businessName, email, onLogout }) {
     setTimeout(() => setCopied(false), 3000);
   };
 
-  // Safely formatted mailto link for developers
-  const mailtoUrl = `mailto:?subject=${encodeURIComponent(`LocalPulse Widget Setup for ${businessName}`)}&body=${encodeURIComponent(`Hi,\n\nPlease add our review widget snippet to our website HTML before the closing </body> tag:\n\n${embedCode}\n\nThanks!`)}`;
+  // Safely formatted mailto string for native email clients
+  const emailSubject = encodeURIComponent(`LocalPulse Widget Setup for ${businessName}`);
+  const emailBody = encodeURIComponent(`Hi,\n\nPlease add our review widget snippet to our website HTML before the closing </body> tag:\n\n${embedCode}\n\nThanks!`);
+  const mailtoUrl = `mailto:?subject=${emailSubject}&body=${emailBody}`;
 
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '40px 20px', fontFamily: 'sans-serif', color: '#1e293b' }}>
@@ -98,7 +103,7 @@ function CustomerDashboard({ businessName, email, onLogout }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e2e8f0', paddingBottom: '20px', marginBottom: '30px' }}>
         <div>
           <h1 style={{ margin: 0, fontSize: '28px', color: '#0f172a' }}>{businessName} Dashboard</h1>
-          <p style={{ margin: '4px 0 0 0', color: '#64748b' }}>Account: <strong>{email}</strong> | <span style={{ color: '#16a34a', fontWeight: 'bold' }}>14 Days Remaining in Trial</span></p>
+          <p style={{ margin: '4px 0 0 0', color: '#64748b' }}>Account: <strong>{email}</strong> | <span style={{ color: '#16a34a', fontWeight: 'bold' }}>{daysRemaining} Days Remaining in Free Trial</span></p>
         </div>
         <button onClick={onLogout} style={{ padding: '8px 16px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#fff', cursor: 'pointer' }}>Log Out</button>
       </div>
@@ -110,7 +115,9 @@ function CustomerDashboard({ businessName, email, onLogout }) {
           {/* Step 1: Connect Google Profile */}
           <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
             <h3 style={{ margin: '0 0 8px 0', fontSize: '18px' }}>1. Connect Google Business Profile</h3>
-            <p style={{ margin: '0 0 12px 0', fontSize: '14px', color: '#64748b' }}>Search your business on Google Maps, click <strong>Share</strong>, and paste your link below:</p>
+            <p style={{ margin: '0 0 12px 0', fontSize: '14px', color: '#64748b' }}>
+              Search your business on <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb', fontWeight: 'bold', textDecoration: 'underline' }}>Google Maps</a>, click <strong>Share</strong>, and paste your link below:
+            </p>
             <input 
               type="text" 
               placeholder="e.g. https://maps.app.goo.gl/..." 
@@ -140,23 +147,30 @@ function CustomerDashboard({ businessName, email, onLogout }) {
             </div>
           </div>
 
-          {/* Step 3: Strategic Offers */}
-          <div style={{ backgroundColor: '#f8fafc', padding: '24px', borderRadius: '12px', border: '1px solid #cbd5e1' }}>
-            <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', color: '#0f172a' }}>Select Your Growth Plan</h3>
-            <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#64748b' }}>Lock in your savings before your 14-day trial expires:</p>
-            
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <a href="https://buy.stripe.com/test_monthly" style={{ display: 'block', backgroundColor: '#ffffff', border: '1px solid #cbd5e1', padding: '14px', borderRadius: '8px', textDecoration: 'none', color: '#0f172a' }}>
-                <strong>Monthly Standard:</strong> $49/month
-              </a>
-              <a href="https://buy.stripe.com/test_3month" style={{ display: 'block', backgroundColor: '#eff6ff', border: '2px solid #2563eb', padding: '14px', borderRadius: '8px', textDecoration: 'none', color: '#1e40af' }}>
-                <strong>3-Month Pass:</strong> $99 one-time <span style={{ backgroundColor: '#dbeafe', color: '#1e40af', fontSize: '12px', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>SAVE $48</span>
-              </a>
-              <a href="https://buy.stripe.com/test_annual" style={{ display: 'block', backgroundColor: '#f0fdf4', border: '1px solid #86efac', padding: '14px', borderRadius: '8px', textDecoration: 'none', color: '#166534' }}>
-                <strong>6-Month VIP Pass:</strong> $245 one-time <span style={{ backgroundColor: '#dcfce7', color: '#15803d', fontSize: '12px', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>Pay 5 Months, Get 6th Month FREE</span>
-              </a>
+          {/* Step 3: Conditional Offers (Shown in last 7 days of trial) */}
+          {daysRemaining <= 7 ? (
+            <div style={{ backgroundColor: '#f8fafc', padding: '24px', borderRadius: '12px', border: '1px solid #cbd5e1' }}>
+              <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', color: '#0f172a' }}>Select Your Growth Plan</h3>
+              <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#64748b' }}>Lock in your savings before your free trial expires:</p>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <a href="https://buy.stripe.com/test_monthly" style={{ display: 'block', backgroundColor: '#ffffff', border: '1px solid #cbd5e1', padding: '14px', borderRadius: '8px', textDecoration: 'none', color: '#0f172a' }}>
+                  <strong>Monthly Standard:</strong> $49/month
+                </a>
+                <a href="https://buy.stripe.com/test_3month" style={{ display: 'block', backgroundColor: '#eff6ff', border: '2px solid #2563eb', padding: '14px', borderRadius: '8px', textDecoration: 'none', color: '#1e40af' }}>
+                  <strong>3-Month Pass:</strong> $99 one-time <span style={{ backgroundColor: '#dbeafe', color: '#1e40af', fontSize: '12px', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>SAVE $48</span>
+                </a>
+                <a href="https://buy.stripe.com/test_annual" style={{ display: 'block', backgroundColor: '#f0fdf4', border: '1px solid #86efac', padding: '14px', borderRadius: '8px', textDecoration: 'none', color: '#166534' }}>
+                  <strong>6-Month VIP Pass:</strong> $245 one-time <span style={{ backgroundColor: '#dcfce7', color: '#15803d', fontSize: '12px', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>Pay 5 Months, Get 6th Month FREE</span>
+                </a>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div style={{ backgroundColor: '#f0fdf4', padding: '20px', borderRadius: '12px', border: '1px solid #bbf7d0', color: '#166534' }}>
+              <h4 style={{ margin: '0 0 4px 0', fontSize: '16px' }}>🎉 Free Trial Active</h4>
+              <p style={{ margin: 0, fontSize: '14px', color: '#15803d' }}>Enjoy full access to your review widget. Payment options will unlock during your final trial week!</p>
+            </div>
+          )}
 
         </div>
 
