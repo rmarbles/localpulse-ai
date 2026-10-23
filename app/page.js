@@ -90,7 +90,8 @@ function CustomerDashboard({ businessName, email, onLogout }) {
   
   const [daysRemaining] = useState(14); 
 
-  const embedCode = `<script src="https://localpulse-ai.vercel.app/widget.js" data-business="${encodeURIComponent(businessName)}" data-color="${widgetColor}"></script>`;
+  const activeName = businessName || 'Your Business';
+  const embedCode = `<script src="https://localpulse-ai.vercel.app/widget.js" data-business="${encodeURIComponent(activeName)}" data-color="${widgetColor}"></script>`;
 
   const handleSync = () => {
     if (!googleUrl) {
@@ -100,7 +101,6 @@ function CustomerDashboard({ businessName, email, onLogout }) {
     setSynced(true);
   };
 
-  // Fail-safe copy method for all browsers
   const copyCodeToClipboard = () => {
     if (navigator.clipboard && window.isSecureContext) {
       navigator.clipboard.writeText(embedCode);
@@ -125,7 +125,7 @@ function CustomerDashboard({ businessName, email, onLogout }) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
-        businessName, 
+        businessName: activeName, 
         email: devEmail, 
         isDeveloperEmail: true, 
         embedCode 
@@ -140,8 +140,8 @@ function CustomerDashboard({ businessName, email, onLogout }) {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e2e8f0', paddingBottom: '20px', marginBottom: '30px' }}>
         <div>
-          <h1 style={{ margin: 0, fontSize: '28px', color: '#0f172a' }}>{businessName} Dashboard</h1>
-          <p style={{ margin: '4px 0 0 0', color: '#64748b' }}>Account: <strong>{email}</strong> | <span style={{ color: '#16a34a', fontWeight: 'bold' }}>{daysRemaining} Days Remaining in Free Trial</span></p>
+          <h1 style={{ margin: 0, fontSize: '28px', color: '#0f172a' }}>{activeName} Dashboard</h1>
+          <p style={{ margin: '4px 0 0 0', color: '#64748b' }}>Account: <strong>{email || 'Demo Mode'}</strong> | <span style={{ color: '#16a34a', fontWeight: 'bold' }}>{daysRemaining} Days Remaining in Free Trial</span></p>
         </div>
         <button onClick={onLogout} style={{ padding: '8px 16px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#fff', cursor: 'pointer' }}>Log Out</button>
       </div>
@@ -249,7 +249,7 @@ function CustomerDashboard({ businessName, email, onLogout }) {
               />
             </div>
 
-            <LocalPulseWidget businessName={businessName} primaryColor={widgetColor} />
+            <LocalPulseWidget businessName={activeName} primaryColor={widgetColor} />
           </div>
         </div>
 
