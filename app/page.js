@@ -100,8 +100,19 @@ function CustomerDashboard({ businessName, email, onLogout }) {
     setSynced(true);
   };
 
+  // Fail-safe copy method for all browsers
   const copyCodeToClipboard = () => {
-    navigator.clipboard.writeText(embedCode);
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(embedCode);
+    } else {
+      const textArea = document.createElement("textarea");
+      textArea.value = embedCode;
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+    }
     setCopiedCode(true);
     setTimeout(() => setCopiedCode(false), 3000);
   };
@@ -162,9 +173,14 @@ function CustomerDashboard({ businessName, email, onLogout }) {
             <h3 style={{ margin: '0 0 8px 0', fontSize: '18px' }}>2. Installation Code</h3>
             <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#64748b' }}>Copy this script tag onto your website or email it straight to your web developer:</p>
             
-            <pre style={{ backgroundColor: '#f1f5f9', padding: '14px', borderRadius: '8px', fontSize: '13px', overflowX: 'auto', border: '1px solid #e2e8f0' }}>{embedCode}</pre>
+            <textarea 
+              readOnly
+              value={embedCode}
+              onClick={(e) => e.target.select()}
+              style={{ width: '100%', height: '70px', backgroundColor: '#f1f5f9', padding: '12px', borderRadius: '8px', fontSize: '13px', border: '1px solid #cbd5e1', fontFamily: 'monospace', resize: 'none', boxSizing: 'border-box', cursor: 'pointer' }}
+            />
             
-            <button onClick={copyCodeToClipboard} style={{ backgroundColor: '#2563eb', color: '#fff', padding: '12px 20px', borderRadius: '8px', border: 'none', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px', width: '100%', marginBottom: '16px' }}>
+            <button onClick={copyCodeToClipboard} style={{ backgroundColor: '#2563eb', color: '#fff', padding: '12px 20px', borderRadius: '8px', border: 'none', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px', width: '100%', marginTop: '10px', marginBottom: '16px' }}>
               {copiedCode ? '✓ Code Copied to Clipboard!' : 'Copy Code'}
             </button>
 
