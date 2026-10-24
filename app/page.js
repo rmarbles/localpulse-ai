@@ -35,8 +35,8 @@ export function LocalPulseWidget({ businessName, primaryColor = '#2563eb', showP
       {/* Optional Pro Addon Header: Google Business Photo / Map Badge */}
       {showPhotoAddon && (
         <div style={{ marginBottom: '16px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #e2e8f0', backgroundColor: '#f8fafc', padding: '12px', textAlign: 'center' }}>
-          <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#1e293b', textTransform: 'uppercase', tracking: '0.5px' }}>📍 Verified Google Business Location</div>
-          <div style={{ fontSize: '13px', color: '#64748b', marginTop: '4px' }}>Google Maps Rating Badge Active</div>
+          <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#1e293b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>📍 Verified Google Business Location</div>
+          <div style={{ fontSize: '13px', color: '#64748b', marginTop: '4px' }}>Google Maps Rating & Location Verified</div>
         </div>
       )}
 
@@ -87,17 +87,18 @@ export function LocalPulseWidget({ businessName, primaryColor = '#2563eb', showP
 }
 
 // ==========================================
-// 2. CLIENT DASHBOARD COMPONENT (CLEAN CONTROL PANEL)
+// 2. CLIENT DASHBOARD COMPONENT
 // ==========================================
 function CustomerDashboard({ businessName, email, onLogout }) {
   const [googleUrl, setGoogleUrl] = useState('');
   const [widgetColor, setWidgetColor] = useState('#2563eb');
   const [copiedCode, setCopiedCode] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
   const [devEmail, setDevEmail] = useState('');
   const [devEmailSent, setDevEmailSent] = useState(false);
   const [synced, setSynced] = useState(false);
   const [showPhotoAddon, setShowPhotoAddon] = useState(false);
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'preview'
+  const [activeTab, setActiveTab] = useState('overview');
 
   const activeName = businessName || 'Your Business';
   const embedCode = `<script src="https://localpulse-ai-sute.vercel.app/widget.js" data-business="${encodeURIComponent(activeName)}" data-color="${widgetColor}"></script>`;
@@ -111,20 +112,34 @@ function CustomerDashboard({ businessName, email, onLogout }) {
     setSynced(true);
   };
 
-  const copyCodeToClipboard = (textToCopy) => {
-    if (navigator.clipboard && window.isSecureContext) {
-      navigator.clipboard.writeText(textToCopy);
-    } else {
-      const textArea = document.createElement("textarea");
-      textArea.value = textToCopy;
-      document.body.appendChild(textArea);
-      textArea.focus();
-      textArea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textArea);
+  // Universal fail-safe copy function
+  const copyToClipboard = (text, type) => {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text);
+      } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        textArea.style.top = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        textArea.remove();
+      }
+
+      if (type === 'code') {
+        setCopiedCode(true);
+        setTimeout(() => setCopiedCode(false), 3000);
+      } else {
+        setCopiedLink(true);
+        setTimeout(() => setCopiedLink(false), 3000);
+      }
+    } catch (err) {
+      alert("Please select and copy the text manually.");
     }
-    setCopiedCode(true);
-    setTimeout(() => setCopiedCode(false), 3000);
   };
 
   const handleSendDevEmail = async (e) => {
@@ -209,8 +224,8 @@ function CustomerDashboard({ businessName, email, onLogout }) {
                   style={{ width: '100%', height: '60px', backgroundColor: '#ffffff', padding: '8px', borderRadius: '6px', fontSize: '12px', border: '1px solid #cbd5e1', fontFamily: 'monospace', resize: 'none', boxSizing: 'border-box' }}
                 />
                 
-                <button onClick={() => copyCodeToClipboard(embedCode)} style={{ backgroundColor: '#2563eb', color: '#fff', padding: '8px 14px', borderRadius: '6px', border: 'none', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px', width: '100%', marginTop: '8px' }}>
-                  Copy Code Snippet
+                <button onClick={() => copyToClipboard(embedCode, 'code')} style={{ backgroundColor: '#2563eb', color: '#fff', padding: '8px 14px', borderRadius: '6px', border: 'none', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px', width: '100%', marginTop: '8px' }}>
+                  {copiedCode ? '✓ Code Copied!' : 'Copy Code Snippet'}
                 </button>
 
                 <form onSubmit={handleSendDevEmail} style={{ display: 'flex', gap: '6px', marginTop: '12px' }}>
@@ -230,21 +245,29 @@ function CustomerDashboard({ businessName, email, onLogout }) {
               </div>
 
               {/* Option B: Hosted Landing Page */}
-              <div style={{ border: '2px solid #2563eb', padding: '16px', borderRadius: '8px', backgroundColor: '#eff6ff' }}>
-                <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#2563eb', textTransform: 'uppercase', marginBottom: '4px' }}>No Website Required</div>
-                <h4 style={{ margin: '0 0 6px 0', color: '#1e40af' }}>Option B: Your Hosted Lead Page</h4>
-                <p style={{ fontSize: '13px', color: '#1e3a8a', margin: '0 0 12px 0' }}>Use this instant link on Google Business Profile, Facebook, or in SMS:</p>
-                
-                <input 
-                  type="text" 
-                  readOnly 
-                  value={hostedPageLink}
-                  style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #93c5fd', backgroundColor: '#fff', fontSize: '12px', boxSizing: 'border-box' }}
-                />
+              <div style={{ border: '2px solid #2563eb', padding: '16px', borderRadius: '8px', backgroundColor: '#eff6ff', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <div>
+                  <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#2563eb', textTransform: 'uppercase', marginBottom: '4px' }}>No Website Required</div>
+                  <h4 style={{ margin: '0 0 6px 0', color: '#1e40af' }}>Option B: Your Hosted Lead Page</h4>
+                  <p style={{ fontSize: '13px', color: '#1e3a8a', margin: '0 0 12px 0' }}>Use this instant link on Google Business Profile, Facebook, or in SMS:</p>
+                  
+                  <input 
+                    type="text" 
+                    readOnly 
+                    value={hostedPageLink}
+                    onClick={(e) => e.target.select()}
+                    style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #93c5fd', backgroundColor: '#fff', fontSize: '12px', boxSizing: 'border-box' }}
+                  />
+                </div>
 
-                <button onClick={() => copyCodeToClipboard(hostedPageLink)} style={{ backgroundColor: '#1d4ed8', color: '#fff', padding: '8px 14px', borderRadius: '6px', border: 'none', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px', width: '100%', marginTop: '8px' }}>
-                  Copy Page Link
-                </button>
+                <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                  <button onClick={() => copyToClipboard(hostedPageLink, 'link')} style={{ flex: 1, backgroundColor: '#1d4ed8', color: '#fff', padding: '10px', borderRadius: '6px', border: 'none', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}>
+                    {copiedLink ? '✓ Link Copied!' : 'Copy Page Link'}
+                  </button>
+                  <a href={hostedPageLink} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', backgroundColor: '#0f172a', color: '#fff', padding: '10px 14px', borderRadius: '6px', textDecoration: 'none', fontWeight: 'bold', fontSize: '13px', textAlign: 'center' }}>
+                    Preview Page ↗
+                  </a>
+                </div>
               </div>
 
             </div>
@@ -312,7 +335,6 @@ export default function LocalPulseSaaS() {
     }
   }, []);
 
-  // Standalone Hosted Page view for contractors without a website
   if (isStandalonePage) {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc', padding: '40px 20px', fontFamily: 'sans-serif' }}>
