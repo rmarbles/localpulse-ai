@@ -3,9 +3,9 @@
 import React, { useState, useEffect } from 'react';
 
 // ==========================================
-// 1. EMBEDDABLE WIDGET COMPONENT
+// 1. EMBEDDABLE WIDGET / HOSTED PAGE COMPONENT
 // ==========================================
-export function LocalPulseWidget({ businessName, primaryColor = '#2563eb' }) {
+export function LocalPulseWidget({ businessName, primaryColor = '#2563eb', showPhotoAddon = false }) {
   const [reviews] = useState([
     { author: "Sarah M.", rating: 5, text: "Incredible service! Fast, professional, and reliable." },
     { author: "David K.", rating: 5, text: "Highly recommend! Arrived on time and went above and beyond." }
@@ -30,7 +30,16 @@ export function LocalPulseWidget({ businessName, primaryColor = '#2563eb' }) {
   };
 
   return (
-    <div style={{ fontFamily: 'sans-serif', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '20px', maxWidth: '380px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)', backgroundColor: '#ffffff' }}>
+    <div style={{ fontFamily: 'sans-serif', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '20px', maxWidth: '400px', margin: '0 auto', boxShadow: '0 4px 12px rgba(0,0,0,0.08)', backgroundColor: '#ffffff' }}>
+      
+      {/* Optional Pro Addon Header: Google Business Photo / Map Badge */}
+      {showPhotoAddon && (
+        <div style={{ marginBottom: '16px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #e2e8f0', backgroundColor: '#f8fafc', padding: '12px', textAlign: 'center' }}>
+          <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#1e293b', textTransform: 'uppercase', tracking: '0.5px' }}>📍 Verified Google Business Location</div>
+          <div style={{ fontSize: '13px', color: '#64748b', marginTop: '4px' }}>Google Maps Rating Badge Active</div>
+        </div>
+      )}
+
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
         <h4 style={{ margin: 0, fontSize: '18px', color: '#0f172a' }}>{businessName || 'Your Business'}</h4>
         <span style={{ backgroundColor: '#fef3c7', color: '#d97706', fontSize: '13px', fontWeight: 'bold', padding: '4px 10px', borderRadius: '12px' }}>★ 5.0 Rated</span>
@@ -78,7 +87,7 @@ export function LocalPulseWidget({ businessName, primaryColor = '#2563eb' }) {
 }
 
 // ==========================================
-// 2. CLIENT DASHBOARD COMPONENT
+// 2. CLIENT DASHBOARD COMPONENT (CLEAN CONTROL PANEL)
 // ==========================================
 function CustomerDashboard({ businessName, email, onLogout }) {
   const [googleUrl, setGoogleUrl] = useState('');
@@ -87,11 +96,12 @@ function CustomerDashboard({ businessName, email, onLogout }) {
   const [devEmail, setDevEmail] = useState('');
   const [devEmailSent, setDevEmailSent] = useState(false);
   const [synced, setSynced] = useState(false);
-  
-  const [daysRemaining] = useState(14); 
+  const [showPhotoAddon, setShowPhotoAddon] = useState(false);
+  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'preview'
 
   const activeName = businessName || 'Your Business';
-  const embedCode = `<script src="https://localpulse-ai.vercel.app/widget.js" data-business="${encodeURIComponent(activeName)}" data-color="${widgetColor}"></script>`;
+  const embedCode = `<script src="https://localpulse-ai-sute.vercel.app/widget.js" data-business="${encodeURIComponent(activeName)}" data-color="${widgetColor}"></script>`;
+  const hostedPageLink = `https://localpulse-ai-sute.vercel.app/?business=${encodeURIComponent(activeName)}&mode=page`;
 
   const handleSync = () => {
     if (!googleUrl) {
@@ -101,12 +111,12 @@ function CustomerDashboard({ businessName, email, onLogout }) {
     setSynced(true);
   };
 
-  const copyCodeToClipboard = () => {
+  const copyCodeToClipboard = (textToCopy) => {
     if (navigator.clipboard && window.isSecureContext) {
-      navigator.clipboard.writeText(embedCode);
+      navigator.clipboard.writeText(textToCopy);
     } else {
       const textArea = document.createElement("textarea");
-      textArea.value = embedCode;
+      textArea.value = textToCopy;
       document.body.appendChild(textArea);
       textArea.focus();
       textArea.select();
@@ -136,21 +146,34 @@ function CustomerDashboard({ businessName, email, onLogout }) {
   };
 
   return (
-    <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '40px 20px', fontFamily: 'sans-serif', color: '#1e293b' }}>
+    <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '40px 20px', fontFamily: 'sans-serif', color: '#1e293b' }}>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e2e8f0', paddingBottom: '20px', marginBottom: '30px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e2e8f0', paddingBottom: '20px', marginBottom: '24px' }}>
         <div>
           <h1 style={{ margin: 0, fontSize: '28px', color: '#0f172a' }}>{activeName} Dashboard</h1>
-          <p style={{ margin: '4px 0 0 0', color: '#64748b' }}>Account: <strong>{email || 'Demo Mode'}</strong> | <span style={{ color: '#16a34a', fontWeight: 'bold' }}>{daysRemaining} Days Remaining in Free Trial</span></p>
+          <p style={{ margin: '4px 0 0 0', color: '#64748b' }}>Account: <strong>{email || 'Demo Mode'}</strong></p>
         </div>
         <button onClick={onLogout} style={{ padding: '8px 16px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#fff', cursor: 'pointer' }}>Log Out</button>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
-        {/* Left Column: Settings & Installation */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      {/* Navigation Tabs */}
+      <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px' }}>
+        <button 
+          onClick={() => setActiveTab('overview')} 
+          style={{ padding: '10px 18px', borderRadius: '8px', border: 'none', backgroundColor: activeTab === 'overview' ? '#2563eb' : '#f1f5f9', color: activeTab === 'overview' ? '#fff' : '#475569', fontWeight: 'bold', cursor: 'pointer' }}>
+          1. Control Panel & Setup
+        </button>
+        <button 
+          onClick={() => setActiveTab('preview')} 
+          style={{ padding: '10px 18px', borderRadius: '8px', border: 'none', backgroundColor: activeTab === 'preview' ? '#2563eb' : '#f1f5f9', color: activeTab === 'preview' ? '#fff' : '#475569', fontWeight: 'bold', cursor: 'pointer' }}>
+          2. Widget & Page Preview
+        </button>
+      </div>
+
+      {activeTab === 'overview' ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           
-          {/* Step 1: Connect Google Profile */}
+          {/* Step 1: Sync Google Profile */}
           <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
             <h3 style={{ margin: '0 0 8px 0', fontSize: '18px' }}>1. Connect Google Business Profile</h3>
             <p style={{ margin: '0 0 12px 0', fontSize: '14px', color: '#64748b' }}>
@@ -168,110 +191,141 @@ function CustomerDashboard({ businessName, email, onLogout }) {
             </button>
           </div>
 
-          {/* Step 2: Widget Embed Code */}
+          {/* Step 2: Website Embed OR No-Website Option */}
           <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-            <h3 style={{ margin: '0 0 8px 0', fontSize: '18px' }}>2. Installation Code</h3>
-            <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#64748b' }}>Copy this script tag onto your website or email it straight to your web developer:</p>
+            <h3 style={{ margin: '0 0 8px 0', fontSize: '18px' }}>2. Choose Your Deployment Method</h3>
             
-            <textarea 
-              readOnly
-              value={embedCode}
-              onClick={(e) => e.target.select()}
-              style={{ width: '100%', height: '70px', backgroundColor: '#f1f5f9', padding: '12px', borderRadius: '8px', fontSize: '13px', border: '1px solid #cbd5e1', fontFamily: 'monospace', resize: 'none', boxSizing: 'border-box', cursor: 'pointer' }}
-            />
-            
-            <button onClick={copyCodeToClipboard} style={{ backgroundColor: '#2563eb', color: '#fff', padding: '12px 20px', borderRadius: '8px', border: 'none', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px', width: '100%', marginTop: '10px', marginBottom: '16px' }}>
-              {copiedCode ? '✓ Code Copied to Clipboard!' : 'Copy Code'}
-            </button>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '16px' }}>
+              
+              {/* Option A: Website Embed */}
+              <div style={{ border: '1px solid #e2e8f0', padding: '16px', borderRadius: '8px', backgroundColor: '#f8fafc' }}>
+                <h4 style={{ margin: '0 0 6px 0', color: '#0f172a' }}>Option A: Install on Existing Website</h4>
+                <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 12px 0' }}>Copy the script tag or send it straight to your web developer:</p>
+                
+                <textarea 
+                  readOnly
+                  value={embedCode}
+                  onClick={(e) => e.target.select()}
+                  style={{ width: '100%', height: '60px', backgroundColor: '#ffffff', padding: '8px', borderRadius: '6px', fontSize: '12px', border: '1px solid #cbd5e1', fontFamily: 'monospace', resize: 'none', boxSizing: 'border-box' }}
+                />
+                
+                <button onClick={() => copyCodeToClipboard(embedCode)} style={{ backgroundColor: '#2563eb', color: '#fff', padding: '8px 14px', borderRadius: '6px', border: 'none', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px', width: '100%', marginTop: '8px' }}>
+                  Copy Code Snippet
+                </button>
 
-            {/* Direct Email to Developer Box */}
-            <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '16px' }}>
-              <p style={{ margin: '0 0 8px 0', fontSize: '14px', fontWeight: '600', color: '#334155' }}>Have a Web Developer? Email them setup instructions:</p>
-              {devEmailSent ? (
-                <div style={{ color: '#16a34a', fontSize: '14px', fontWeight: '600' }}>✓ Setup instructions emailed to {devEmail}!</div>
-              ) : (
-                <form onSubmit={handleSendDevEmail} style={{ display: 'flex', gap: '8px' }}>
+                <form onSubmit={handleSendDevEmail} style={{ display: 'flex', gap: '6px', marginTop: '12px' }}>
                   <input 
                     type="email" 
                     required
                     placeholder="developer@yourbusiness.com" 
                     value={devEmail}
                     onChange={(e) => setDevEmail(e.target.value)}
-                    style={{ flex: 1, padding: '10px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '14px' }}
+                    style={{ flex: 1, padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }}
                   />
-                  <button type="submit" style={{ backgroundColor: '#0f172a', color: '#fff', border: 'none', borderRadius: '6px', padding: '10px 14px', fontSize: '14px', cursor: 'pointer', fontWeight: '600' }}>
-                    Send Instructions
+                  <button type="submit" style={{ backgroundColor: '#0f172a', color: '#fff', border: 'none', borderRadius: '6px', padding: '8px 12px', fontSize: '13px', cursor: 'pointer' }}>
+                    Email Dev
                   </button>
                 </form>
-              )}
+                {devEmailSent && <div style={{ color: '#16a34a', fontSize: '12px', marginTop: '4px' }}>✓ Instructions sent!</div>}
+              </div>
+
+              {/* Option B: Hosted Landing Page */}
+              <div style={{ border: '2px solid #2563eb', padding: '16px', borderRadius: '8px', backgroundColor: '#eff6ff' }}>
+                <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#2563eb', textTransform: 'uppercase', marginBottom: '4px' }}>No Website Required</div>
+                <h4 style={{ margin: '0 0 6px 0', color: '#1e40af' }}>Option B: Your Hosted Lead Page</h4>
+                <p style={{ fontSize: '13px', color: '#1e3a8a', margin: '0 0 12px 0' }}>Use this instant link on Google Business Profile, Facebook, or in SMS:</p>
+                
+                <input 
+                  type="text" 
+                  readOnly 
+                  value={hostedPageLink}
+                  style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #93c5fd', backgroundColor: '#fff', fontSize: '12px', boxSizing: 'border-box' }}
+                />
+
+                <button onClick={() => copyCodeToClipboard(hostedPageLink)} style={{ backgroundColor: '#1d4ed8', color: '#fff', padding: '8px 14px', borderRadius: '6px', border: 'none', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px', width: '100%', marginTop: '8px' }}>
+                  Copy Page Link
+                </button>
+              </div>
+
             </div>
           </div>
 
-          {/* Step 3: Conditional Offers */}
-          {daysRemaining <= 7 ? (
-            <div style={{ backgroundColor: '#f8fafc', padding: '24px', borderRadius: '12px', border: '1px solid #cbd5e1' }}>
-              <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', color: '#0f172a' }}>Select Your Growth Plan</h3>
-              <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#64748b' }}>Lock in your savings before your free trial expires:</p>
-              
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <a href="https://buy.stripe.com/test_monthly" style={{ display: 'block', backgroundColor: '#ffffff', border: '1px solid #cbd5e1', padding: '14px', borderRadius: '8px', textDecoration: 'none', color: '#0f172a' }}>
-                  <strong>Monthly Standard:</strong> $49/month
-                </a>
-                <a href="https://buy.stripe.com/test_3month" style={{ display: 'block', backgroundColor: '#eff6ff', border: '2px solid #2563eb', padding: '14px', borderRadius: '8px', textDecoration: 'none', color: '#1e40af' }}>
-                  <strong>3-Month Pass:</strong> $99 one-time <span style={{ backgroundColor: '#dbeafe', color: '#1e40af', fontSize: '12px', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>SAVE $48</span>
-                </a>
-                <a href="https://buy.stripe.com/test_annual" style={{ display: 'block', backgroundColor: '#f0fdf4', border: '1px solid #86efac', padding: '14px', borderRadius: '8px', textDecoration: 'none', color: '#166534' }}>
-                  <strong>6-Month VIP Pass:</strong> $245 one-time <span style={{ backgroundColor: '#dcfce7', color: '#15803d', fontSize: '12px', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>Pay 5 Months, Get 6th Month FREE</span>
-                </a>
-              </div>
-            </div>
-          ) : (
-            <div style={{ backgroundColor: '#f0fdf4', padding: '20px', borderRadius: '12px', border: '1px solid #bbf7d0', color: '#166534' }}>
-              <h4 style={{ margin: '0 0 4px 0', fontSize: '16px' }}>🎉 Free Trial Active</h4>
-              <p style={{ margin: 0, fontSize: '14px', color: '#15803d' }}>Enjoy full access to your review widget. Payment options will unlock during your final trial week!</p>
-            </div>
-          )}
-
         </div>
-
-        {/* Right Column: Live Customize Preview */}
-        <div>
-          <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-            <h3 style={{ margin: '0 0 16px 0', fontSize: '18px' }}>Live Widget Preview</h3>
-            
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', fontSize: '14px', color: '#64748b', marginBottom: '8px' }}>Accent Button Color</label>
+      ) : (
+        /* Preview Tab */
+        <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+          <h3 style={{ margin: '0 0 16px 0', fontSize: '18px' }}>Live Customization & Upgrades</h3>
+          
+          <div style={{ display: 'flex', gap: '30px', alignItems: 'center', marginBottom: '24px', borderBottom: '1px solid #f1f5f9', paddingBottom: '16px' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '14px', color: '#64748b', marginBottom: '6px' }}>Accent Button Color</label>
               <input 
                 type="color" 
                 value={widgetColor} 
                 onChange={(e) => setWidgetColor(e.target.value)}
-                style={{ width: '60px', height: '40px', border: 'none', cursor: 'pointer', borderRadius: '4px' }}
+                style={{ width: '50px', height: '36px', border: 'none', cursor: 'pointer', borderRadius: '4px' }}
               />
             </div>
 
-            <LocalPulseWidget businessName={activeName} primaryColor={widgetColor} />
+            <div>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold', color: '#0f172a' }}>
+                <input 
+                  type="checkbox" 
+                  checked={showPhotoAddon} 
+                  onChange={(e) => setShowPhotoAddon(e.target.checked)} 
+                />
+                Enable Google Maps Photo & Rating Badge ($7 Addon)
+              </label>
+            </div>
           </div>
-        </div>
 
-      </div>
+          <LocalPulseWidget businessName={activeName} primaryColor={widgetColor} showPhotoAddon={showPhotoAddon} />
+        </div>
+      )}
     </div>
   );
 }
 
 // ==========================================
-// 3. MAIN SAAS LANDING PAGE
+// 3. MAIN SAAS LANDING PAGE & ROUTER
 // ==========================================
 export default function LocalPulseSaaS() {
   const [businessName, setBusinessName] = useState('');
   const [email, setEmail] = useState('');
   const [activeUser, setActiveUser] = useState(null);
+  const [isStandalonePage, setIsStandalonePage] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const bName = params.get('business');
     const uEmail = params.get('email');
-    if (bName && uEmail) setActiveUser({ businessName: bName, email: uEmail });
+    const mode = params.get('mode');
+
+    if (mode === 'page' && bName) {
+      setIsStandalonePage(true);
+      setBusinessName(bName);
+      return;
+    }
+
+    if (bName && uEmail) {
+      setActiveUser({ businessName: bName, email: uEmail });
+    }
   }, []);
+
+  // Standalone Hosted Page view for contractors without a website
+  if (isStandalonePage) {
+    return (
+      <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc', padding: '40px 20px', fontFamily: 'sans-serif' }}>
+        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+          <h2 style={{ color: '#0f172a', margin: 0 }}>{businessName}</h2>
+          <p style={{ color: '#64748b', margin: '4px 0 0 0' }}>Official Verified Customer Review Page</p>
+        </div>
+        <LocalPulseWidget businessName={businessName} showPhotoAddon={true} />
+      </div>
+    );
+  }
+
+  if (activeUser) return <CustomerDashboard businessName={activeUser.businessName} email={activeUser.email} onLogout={() => setActiveUser(null)} />;
 
   const handleSignup = async (e) => {
     e.preventDefault();
@@ -283,8 +337,6 @@ export default function LocalPulseSaaS() {
     setActiveUser({ businessName, email });
   };
 
-  if (activeUser) return <CustomerDashboard businessName={activeUser.businessName} email={activeUser.email} onLogout={() => setActiveUser(null)} />;
-
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#0f172a', color: '#f8fafc', fontFamily: 'sans-serif', padding: '40px 20px' }}>
       <div style={{ maxWidth: '1000px', margin: '0 auto', textAlign: 'center' }}>
@@ -292,7 +344,7 @@ export default function LocalPulseSaaS() {
           Turn Website Visitors Into Instant Local Clients
         </h1>
         <p style={{ fontSize: '18px', color: '#94a3b8', maxWidth: '700px', margin: '0 auto 40px auto', lineHeight: '1.6' }}>
-          Display verified 5-star Google reviews and an instant quote box directly on your website to increase leads on autopilot.
+          Display verified 5-star Google reviews and an instant quote box directly on your website or standalone lead page.
         </p>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', alignItems: 'center', textAlign: 'left', backgroundColor: '#1e293b', padding: '36px', borderRadius: '16px', border: '1px solid #334155' }}>
