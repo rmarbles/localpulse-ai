@@ -146,6 +146,12 @@ function CustomerDashboard({ businessName, email, onLogout }) {
   const [showPhotoAddon, setShowPhotoAddon] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
 
+  // Simulated Lead Activity Data
+  const [leads] = useState([
+    { id: 101, name: "Mark Thompson", phone: "(512) 555-0192", request: "Need quote for hot water heater replacement", date: "Today at 2:14 PM", status: "New Lead" },
+    { id: 102, name: "Jessica Alba", phone: "(512) 555-0148", request: "Can I get an estimate for full driveway pressure washing?", date: "Yesterday at 4:30 PM", status: "Contacted" }
+  ]);
+
   const activeName = businessName || 'Your Business Name';
   const embedCode = `<script src="https://localpulse-ai-sute.vercel.app/widget.js" data-business="${encodeURIComponent(activeName)}" data-color="${widgetColor}"></script>`;
   const hostedPageLink = `https://localpulse-ai-sute.vercel.app/?business=${encodeURIComponent(activeName)}&mode=page`;
@@ -211,16 +217,35 @@ function CustomerDashboard({ businessName, email, onLogout }) {
         <button onClick={onLogout} style={{ padding: '8px 16px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#fff', cursor: 'pointer', fontSize: '13px' }}>Log Out</button>
       </div>
 
-      {/* Tabs */}
+      {/* Metrics Summary Bar */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', marginBottom: '24px' }}>
+        <div style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', padding: '16px', borderRadius: '10px', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+          <div style={{ fontSize: '12px', color: '#64748b', textTransform: 'uppercase', fontWeight: 'bold' }}>Widget Impressions</div>
+          <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#0f172a', marginTop: '4px' }}>148 Views</div>
+        </div>
+        <div style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', padding: '16px', borderRadius: '10px', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+          <div style={{ fontSize: '12px', color: '#64748b', textTransform: 'uppercase', fontWeight: 'bold' }}>Quote Requests Captured</div>
+          <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#2563eb', marginTop: '4px' }}>12 Leads</div>
+        </div>
+        <div style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', padding: '16px', borderRadius: '10px', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+          <div style={{ fontSize: '12px', color: '#64748b', textTransform: 'uppercase', fontWeight: 'bold' }}>Conversion Rate</div>
+          <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#16a34a', marginTop: '4px' }}>8.1%</div>
+        </div>
+      </div>
+
+      {/* Navigation Tabs */}
       <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px' }}>
         <button onClick={() => setActiveTab('overview')} style={{ padding: '10px 18px', borderRadius: '8px', border: 'none', backgroundColor: activeTab === 'overview' ? '#2563eb' : '#f1f5f9', color: activeTab === 'overview' ? '#fff' : '#475569', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' }}>
           1. Setup & Deployment
         </button>
+        <button onClick={() => setActiveTab('inbox')} style={{ padding: '10px 18px', borderRadius: '8px', border: 'none', backgroundColor: activeTab === 'inbox' ? '#2563eb' : '#f1f5f9', color: activeTab === 'inbox' ? '#fff' : '#475569', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' }}>
+          2. Lead Activity Inbox 📩
+        </button>
         <button onClick={() => setActiveTab('customize')} style={{ padding: '10px 18px', borderRadius: '8px', border: 'none', backgroundColor: activeTab === 'customize' ? '#2563eb' : '#f1f5f9', color: activeTab === 'customize' ? '#fff' : '#475569', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' }}>
-          2. Live Promo Block & Preview 🎁
+          3. Promo Banner & Customizer 🎁
         </button>
         <button onClick={() => setActiveTab('billing')} style={{ padding: '10px 18px', borderRadius: '8px', border: 'none', backgroundColor: activeTab === 'billing' ? '#2563eb' : '#f1f5f9', color: activeTab === 'billing' ? '#fff' : '#475569', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' }}>
-          3. Subscriptions & Addons 💳
+          4. Plans & Billing 💳
         </button>
       </div>
 
@@ -312,6 +337,40 @@ function CustomerDashboard({ businessName, email, onLogout }) {
             </div>
           </div>
 
+        </div>
+      )}
+
+      {activeTab === 'inbox' && (
+        <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+          <h3 style={{ margin: '0 0 16px 0', fontSize: '18px', color: '#0f172a' }}>Captured Lead Activity Inbox</h3>
+          <p style={{ color: '#64748b', fontSize: '14px', margin: '0 0 20px 0' }}>All quote requests entered through your widget or standalone page are listed below and dispatched immediately to your email/SMS:</p>
+
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '14px' }}>
+              <thead>
+                <tr style={{ backgroundColor: '#f8fafc', borderBottom: '2px solid #e2e8f0', color: '#475569' }}>
+                  <th style={{ padding: '12px' }}>Date</th>
+                  <th style={{ padding: '12px' }}>Customer Phone</th>
+                  <th style={{ padding: '12px' }}>Quote Details</th>
+                  <th style={{ padding: '12px' }}>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {leads.map((lead) => (
+                  <tr key={lead.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                    <td style={{ padding: '12px', color: '#64748b', fontSize: '13px' }}>{lead.date}</td>
+                    <td style={{ padding: '12px', fontWeight: 'bold', color: '#2563eb' }}>{lead.phone}</td>
+                    <td style={{ padding: '12px', color: '#334155' }}>{lead.request}</td>
+                    <td style={{ padding: '12px' }}>
+                      <span style={{ backgroundColor: lead.status === 'New Lead' ? '#dcfce7' : '#f1f5f9', color: lead.status === 'New Lead' ? '#15803d' : '#475569', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}>
+                        {lead.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
@@ -497,66 +556,22 @@ export default function LocalPulseSaaS() {
     <div style={{ minHeight: '100vh', backgroundColor: '#0f172a', color: '#f8fafc', fontFamily: 'sans-serif', padding: '40px 20px' }}>
       
       {/* Top Navbar */}
-      <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '60px' }}>
+      <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
         <div style={{ fontSize: '22px', fontWeight: '800', color: '#60a5fa' }}>LocalPulse AI</div>
         <a href="#signup" style={{ backgroundColor: '#2563eb', color: '#fff', padding: '10px 20px', borderRadius: '8px', textDecoration: 'none', fontWeight: 'bold', fontSize: '14px' }}>Start 14-Day Free Trial</a>
       </div>
 
-      <div style={{ maxWidth: '1100px', margin: '0 auto', textAlign: 'center' }}>
-        <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '20px', background: 'linear-gradient(to right, #60a5fa, #a855f7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', lineHeight: '1.2' }}>
-          Turn Local Website Traffic Into High-Paying Clients
-        </h1>
-        <p style={{ fontSize: '19px', color: '#94a3b8', maxWidth: '750px', margin: '0 auto 50px auto', lineHeight: '1.6' }}>
-          Display verified 5-star Google reviews and an instant SMS quote request form on your existing website or dedicated AI lead page.
-        </p>
+      <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+        
+        {/* Hero Section */}
+        <div style={{ textAlign: 'center', marginBottom: '60px' }}>
+          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '20px', background: 'linear-gradient(to right, #60a5fa, #a855f7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', lineHeight: '1.2' }}>
+            Turn Local Website Traffic Into High-Paying Clients
+          </h1>
+          <p style={{ fontSize: '19px', color: '#94a3b8', maxWidth: '750px', margin: '0 auto 40px auto', lineHeight: '1.6' }}>
+            Display verified 5-star Google reviews and an instant SMS quote request form on your existing website or dedicated AI lead page.
+          </p>
 
-        {/* Hero split section */}
-        <div id="signup" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', alignItems: 'center', textAlign: 'left', backgroundColor: '#1e293b', padding: '40px', borderRadius: '16px', border: '1px solid #334155', boxShadow: '0 12px 32px rgba(0,0,0,0.3)' }}>
-          
-          <div>
-            <h3 style={{ fontSize: '26px', margin: '0 0 8px 0' }}>Activate Free Trial</h3>
-            <p style={{ color: '#94a3b8', fontSize: '15px', marginBottom: '24px' }}>No credit card required. Up and running in under 60 seconds.</p>
-            
-            <form onSubmit={handleSignup} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div>
-                <label style={{ fontSize: '14px', color: '#94a3b8', display: 'block', marginBottom: '6px' }}>Business Name</label>
-                <input 
-                  type="text" 
-                  required 
-                  placeholder="e.g. Austin Mobile Auto Detail" 
-                  value={businessName}
-                  onChange={(e) => setBusinessName(e.target.value)}
-                  style={{ width: '100%', padding: '14px', borderRadius: '8px', border: '1px solid #475569', backgroundColor: '#0f172a', color: '#fff', fontSize: '16px', boxSizing: 'border-box' }}
-                />
-              </div>
-              <div>
-                <label style={{ fontSize: '14px', color: '#94a3b8', display: 'block', marginBottom: '6px' }}>Work Email Address</label>
-                <input 
-                  type="email" 
-                  required 
-                  placeholder="owner@yourbusiness.com" 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  style={{ width: '100%', padding: '14px', borderRadius: '8px', border: '1px solid #475569', backgroundColor: '#0f172a', color: '#fff', fontSize: '16px', boxSizing: 'border-box' }}
-                />
-              </div>
-              <button type="submit" style={{ width: '100%', padding: '16px', backgroundColor: '#2563eb', color: '#fff', fontWeight: 'bold', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '16px' }}>
-                Launch My Control Panel →
-              </button>
-            </form>
-          </div>
-
-          <div>
-            <div style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', color: '#64748b', fontWeight: 'bold', marginBottom: '12px', textAlign: 'center' }}>Live Live Output Preview</div>
-            <LocalPulseWidget 
-              businessName={businessName || "Your Business Name"} 
-              showPhotoAddon={true} 
-              specialOffer="10% Off First Service Call!" 
-            />
-          </div>
-
-        </div>
-      </div>
-    </div>
-  );
-}
+          <div id="signup" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', alignItems: 'center', textAlign: 'left', backgroundColor: '#1e293b', padding: '40px', borderRadius: '16px', border: '1px solid #334155', boxShadow: '0 12px 32px rgba(0,0,0,0.3)' }}>
+            <div>
+              <h3 style={{ fontSize: '26px', margin: '0 0 8px
