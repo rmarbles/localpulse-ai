@@ -3,12 +3,18 @@
 import React, { useState, useEffect } from 'react';
 
 // ==========================================
-// 1. LIVE EMBEDDABLE WIDGET / HOSTED PAGE
+// 1. EMBEDDABLE WIDGET & HOSTED LANDING PAGE
 // ==========================================
-export function LocalPulseWidget({ businessName, primaryColor = '#2563eb', showPhotoAddon = true }) {
-  const [reviews, setReviews] = useState([
-    { author: "Verified Customer", rating: 5, text: "Outstanding service! Prompt, fair pricing, and clean work." },
-    { author: "Local Resident", rating: 5, text: "Extremely professional. Arrived on time and resolved our issue quickly!" }
+export function LocalPulseWidget({ 
+  businessName, 
+  primaryColor = '#2563eb', 
+  showPhotoAddon = true,
+  specialOffer = '',
+  customLogo = ''
+}) {
+  const [reviews] = useState([
+    { author: "Sarah M.", rating: 5, text: "Outstanding service! Arrived promptly and fixed our issue cleanly." },
+    { author: "David K.", rating: 5, text: "Fair pricing, reliable communication, and highly recommended!" }
   ]);
   const [leadQuestion, setLeadQuestion] = useState('');
   const [leadPhone, setLeadPhone] = useState('');
@@ -28,86 +34,110 @@ export function LocalPulseWidget({ businessName, primaryColor = '#2563eb', showP
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          leadText: `Service Requested: ${leadQuestion} | Phone: ${leadPhone}`, 
+          leadText: `Quote Request: ${leadQuestion} | Phone: ${leadPhone}`, 
           businessName 
         })
       });
       setSubmitted(true);
     } catch (err) {
-      alert("Error sending request. Please try again.");
+      alert("Error submitting request. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={{ fontFamily: 'sans-serif', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '20px', maxWidth: '400px', margin: '0 auto', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', backgroundColor: '#ffffff' }}>
+    <div style={{ fontFamily: 'sans-serif', border: '1px solid #e2e8f0', borderRadius: '14px', maxWidth: '420px', margin: '0 auto', boxShadow: '0 8px 24px rgba(0,0,0,0.08)', backgroundColor: '#ffffff', overflow: 'hidden' }}>
       
-      {/* Verified Google Badge Header */}
+      {/* Verified Google Header & Cover Photo Addon */}
       {showPhotoAddon && (
-        <div style={{ marginBottom: '16px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #bbf7d0', backgroundColor: '#f0fdf4', padding: '12px', textAlign: 'center' }}>
-          <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#166534', textTransform: 'uppercase', letterSpacing: '0.5px' }}>📍 Verified Google Business Profile</div>
-          <div style={{ fontSize: '13px', color: '#15803d', marginTop: '2px' }}>Live Reviews & Map Location Synced</div>
+        <div style={{ backgroundColor: '#0f172a', padding: '16px', color: '#fff', textAlign: 'center', borderBottom: '3px solid #22c55e' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '6px' }}>
+            {customLogo ? (
+              <img src={customLogo} alt="Logo" style={{ width: '28px', height: '28px', borderRadius: '50%' }} />
+            ) : (
+              <span style={{ backgroundColor: '#22c55e', color: '#fff', borderRadius: '50%', width: '24px', height: '24px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold' }}>✓</span>
+            )}
+            <span style={{ fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#86efac' }}>Verified Google Profile</span>
+          </div>
+          <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 'bold', color: '#ffffff' }}>{businessName || 'Your Business Name'}</h3>
+          <div style={{ fontSize: '13px', color: '#94a3b8', marginTop: '4px' }}>★★★★★ 5.0 Rating on Google Maps</div>
         </div>
       )}
 
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-        <h4 style={{ margin: 0, fontSize: '18px', color: '#0f172a' }}>{businessName || 'Your Business'}</h4>
-        <span style={{ backgroundColor: '#fef3c7', color: '#d97706', fontSize: '13px', fontWeight: 'bold', padding: '4px 10px', borderRadius: '12px' }}>★ 5.0 Rating</span>
-      </div>
-      
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
-        {reviews.map((r, i) => (
-          <div key={i} style={{ backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px', fontSize: '14px', border: '1px solid #f1f5f9' }}>
-            <div style={{ fontWeight: '600', color: '#334155', display: 'flex', justifyContent: 'space-between' }}>
-              <span>{r.author}</span>
-              <span style={{ color: '#eab308' }}>★★★★★</span>
-            </div>
-            <p style={{ margin: '4px 0 0 0', color: '#64748b', fontSize: '13px' }}>"{r.text}"</p>
+      <div style={{ padding: '20px' }}>
+        
+        {!showPhotoAddon && (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+            <h4 style={{ margin: 0, fontSize: '18px', color: '#0f172a' }}>{businessName || 'Your Business Name'}</h4>
+            <span style={{ backgroundColor: '#fef3c7', color: '#d97706', fontSize: '12px', fontWeight: 'bold', padding: '4px 10px', borderRadius: '12px' }}>★ 5.0 Rated</span>
           </div>
-        ))}
-      </div>
-
-      <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '12px' }}>
-        <p style={{ margin: '0 0 8px 0', fontSize: '14px', fontWeight: '600', color: '#0f172a' }}>Request a Fast SMS Quote:</p>
-        {submitted ? (
-          <div style={{ color: '#16a34a', backgroundColor: '#f0fdf4', padding: '12px', borderRadius: '6px', fontSize: '14px', fontWeight: '500', textAlign: 'center' }}>
-            ✓ Request sent! We will text you at {leadPhone} shortly.
-          </div>
-        ) : (
-          <form onSubmit={handleLeadSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <input 
-              type="text" 
-              placeholder="What service do you need done?" 
-              value={leadQuestion}
-              onChange={(e) => setLeadQuestion(e.target.value)}
-              style={{ padding: '10px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '14px' }}
-            />
-            <div style={{ display: 'flex', gap: '6px' }}>
-              <input 
-                type="tel" 
-                placeholder="Your Cell # for Fast Text Response" 
-                value={leadPhone}
-                onChange={(e) => setLeadPhone(e.target.value)}
-                style={{ flex: 1, padding: '10px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '14px' }}
-              />
-              <button type="submit" disabled={loading} style={{ backgroundColor: primaryColor, color: '#fff', border: 'none', borderRadius: '6px', padding: '10px 14px', fontSize: '14px', cursor: 'pointer', fontWeight: '600' }}>
-                {loading ? 'Sending...' : 'Get Quote'}
-              </button>
-            </div>
-          </form>
         )}
+
+        {/* Custom Writable Promo Block */}
+        {specialOffer && (
+          <div style={{ backgroundColor: '#eff6ff', border: '1px dashed #2563eb', borderRadius: '8px', padding: '12px', marginBottom: '16px', color: '#1e40af', fontSize: '13px', textAlign: 'center', fontWeight: '600' }}>
+            🎁 <strong>Special Promotion:</strong> {specialOffer}
+          </div>
+        )}
+
+        {/* Dynamic Reviews Container */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
+          {reviews.map((r, i) => (
+            <div key={i} style={{ backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px', fontSize: '13px', border: '1px solid #f1f5f9' }}>
+              <div style={{ fontWeight: '600', color: '#334155', display: 'flex', justifyContent: 'space-between' }}>
+                <span>{r.author}</span>
+                <span style={{ color: '#eab308' }}>★★★★★</span>
+              </div>
+              <p style={{ margin: '4px 0 0 0', color: '#64748b' }}>"{r.text}"</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Lead Capture Block */}
+        <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '14px' }}>
+          <p style={{ margin: '0 0 8px 0', fontSize: '14px', fontWeight: '600', color: '#0f172a' }}>Request an Instant Quote:</p>
+          {submitted ? (
+            <div style={{ color: '#16a34a', backgroundColor: '#f0fdf4', padding: '12px', borderRadius: '6px', fontSize: '13px', fontWeight: '500', textAlign: 'center' }}>
+              ✓ Quote request sent! We will text you shortly at {leadPhone}.
+            </div>
+          ) : (
+            <form onSubmit={handleLeadSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <input 
+                type="text" 
+                placeholder="What service do you need done?" 
+                value={leadQuestion}
+                onChange={(e) => setLeadQuestion(e.target.value)}
+                style={{ padding: '10px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+              />
+              <div style={{ display: 'flex', gap: '6px' }}>
+                <input 
+                  type="tel" 
+                  placeholder="Cell # for SMS Quote" 
+                  value={leadPhone}
+                  onChange={(e) => setLeadPhone(e.target.value)}
+                  style={{ flex: 1, padding: '10px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+                />
+                <button type="submit" disabled={loading} style={{ backgroundColor: primaryColor, color: '#fff', border: 'none', borderRadius: '6px', padding: '10px 14px', fontSize: '13px', cursor: 'pointer', fontWeight: '600' }}>
+                  {loading ? '...' : 'Get Quote'}
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
+
       </div>
     </div>
   );
 }
 
 // ==========================================
-// 2. SELF-SERVE CLIENT CONTROL PANEL
+// 2. PRIVATE CLIENT DASHBOARD CONTROL PANEL
 // ==========================================
 function CustomerDashboard({ businessName, email, onLogout }) {
   const [googleUrl, setGoogleUrl] = useState('');
   const [widgetColor, setWidgetColor] = useState('#2563eb');
+  const [specialOffer, setSpecialOffer] = useState('10% Off Your First Service Call!');
   const [copiedCode, setCopiedCode] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [devEmail, setDevEmail] = useState('');
@@ -116,7 +146,7 @@ function CustomerDashboard({ businessName, email, onLogout }) {
   const [showPhotoAddon, setShowPhotoAddon] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
 
-  const activeName = businessName || 'Your Business';
+  const activeName = businessName || 'Your Business Name';
   const embedCode = `<script src="https://localpulse-ai-sute.vercel.app/widget.js" data-business="${encodeURIComponent(activeName)}" data-color="${widgetColor}"></script>`;
   const hostedPageLink = `https://localpulse-ai-sute.vercel.app/?business=${encodeURIComponent(activeName)}&mode=page`;
 
@@ -170,61 +200,61 @@ function CustomerDashboard({ businessName, email, onLogout }) {
   };
 
   return (
-    <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '40px 20px', fontFamily: 'sans-serif', color: '#1e293b' }}>
+    <div style={{ maxWidth: '1050px', margin: '0 auto', padding: '40px 20px', fontFamily: 'sans-serif', color: '#1e293b' }}>
       
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e2e8f0', paddingBottom: '20px', marginBottom: '24px' }}>
         <div>
-          <h1 style={{ margin: 0, fontSize: '28px', color: '#0f172a' }}>{activeName} Portal</h1>
-          <p style={{ margin: '4px 0 0 0', color: '#64748b' }}>Account: <strong>{email || 'Demo Mode'}</strong> | <span style={{ color: '#16a34a', fontWeight: 'bold' }}>14 Days Active Trial</span></p>
+          <h1 style={{ margin: 0, fontSize: '26px', color: '#0f172a' }}>{activeName} Portal</h1>
+          <p style={{ margin: '4px 0 0 0', color: '#64748b', fontSize: '14px' }}>Account Owner: <strong>{email || 'Demo Mode'}</strong> | <span style={{ color: '#16a34a', fontWeight: 'bold' }}>14-Day Free Trial Active</span></p>
         </div>
-        <button onClick={onLogout} style={{ padding: '8px 16px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#fff', cursor: 'pointer' }}>Log Out</button>
+        <button onClick={onLogout} style={{ padding: '8px 16px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#fff', cursor: 'pointer', fontSize: '13px' }}>Log Out</button>
       </div>
 
       {/* Tabs */}
       <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px' }}>
-        <button onClick={() => setActiveTab('overview')} style={{ padding: '10px 18px', borderRadius: '8px', border: 'none', backgroundColor: activeTab === 'overview' ? '#2563eb' : '#f1f5f9', color: activeTab === 'overview' ? '#fff' : '#475569', fontWeight: 'bold', cursor: 'pointer' }}>
-          1. Deployment Methods
+        <button onClick={() => setActiveTab('overview')} style={{ padding: '10px 18px', borderRadius: '8px', border: 'none', backgroundColor: activeTab === 'overview' ? '#2563eb' : '#f1f5f9', color: activeTab === 'overview' ? '#fff' : '#475569', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' }}>
+          1. Setup & Deployment
         </button>
-        <button onClick={() => setActiveTab('preview')} style={{ padding: '10px 18px', borderRadius: '8px', border: 'none', backgroundColor: activeTab === 'preview' ? '#2563eb' : '#f1f5f9', color: activeTab === 'preview' ? '#fff' : '#475569', fontWeight: 'bold', cursor: 'pointer' }}>
-          2. Live Preview & Customizer
+        <button onClick={() => setActiveTab('customize')} style={{ padding: '10px 18px', borderRadius: '8px', border: 'none', backgroundColor: activeTab === 'customize' ? '#2563eb' : '#f1f5f9', color: activeTab === 'customize' ? '#fff' : '#475569', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' }}>
+          2. Live Promo Block & Preview 🎁
         </button>
-        <button onClick={() => setActiveTab('billing')} style={{ padding: '10px 18px', borderRadius: '8px', border: 'none', backgroundColor: activeTab === 'billing' ? '#2563eb' : '#f1f5f9', color: activeTab === 'billing' ? '#fff' : '#475569', fontWeight: 'bold', cursor: 'pointer' }}>
-          3. Account & Billing 💳
+        <button onClick={() => setActiveTab('billing')} style={{ padding: '10px 18px', borderRadius: '8px', border: 'none', backgroundColor: activeTab === 'billing' ? '#2563eb' : '#f1f5f9', color: activeTab === 'billing' ? '#fff' : '#475569', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' }}>
+          3. Subscriptions & Addons 💳
         </button>
       </div>
 
       {activeTab === 'overview' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           
-          {/* Google Profile Connection */}
+          {/* Step 1: Google Profiles */}
           <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
             <h3 style={{ margin: '0 0 8px 0', fontSize: '18px' }}>1. Connect Google Business Profile</h3>
             <p style={{ margin: '0 0 12px 0', fontSize: '14px', color: '#64748b' }}>
-              Search your business on <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb', fontWeight: 'bold' }}>Google Maps</a>, click <strong>Share</strong>, and paste your URL below:
+              Search your business on <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb', fontWeight: 'bold' }}>Google Maps</a>, click <strong>Share</strong>, and paste your link below:
             </p>
             <input 
               type="text" 
               placeholder="e.g. https://maps.app.goo.gl/..." 
               value={googleUrl}
               onChange={(e) => setGoogleUrl(e.target.value)}
-              style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '15px', boxSizing: 'border-box', marginBottom: '12px' }}
+              style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', boxSizing: 'border-box', marginBottom: '12px' }}
             />
             <button onClick={handleSync} style={{ backgroundColor: '#0f172a', color: '#fff', padding: '12px 18px', borderRadius: '8px', border: 'none', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' }}>
-              {synced ? '✓ Reviews Synced Successfully' : 'Sync Google Reviews'}
+              {synced ? '✓ Google Profile & Reviews Synced' : 'Sync Live Google Reviews'}
             </button>
           </div>
 
-          {/* Deployment Choices */}
+          {/* Step 2: Deployment Choices */}
           <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-            <h3 style={{ margin: '0 0 8px 0', fontSize: '18px' }}>2. Choose How You Want to Collect Leads</h3>
+            <h3 style={{ margin: '0 0 8px 0', fontSize: '18px' }}>2. Choose Deployment Option</h3>
             
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '16px' }}>
               
-              {/* Option A: Existing Website */}
+              {/* Option A: Website Script */}
               <div style={{ border: '1px solid #e2e8f0', padding: '16px', borderRadius: '8px', backgroundColor: '#f8fafc' }}>
-                <h4 style={{ margin: '0 0 6px 0', color: '#0f172a' }}>Option A: Existing Website Script Embed</h4>
-                <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 12px 0' }}>Paste on your site or email directly to your web developer:</p>
+                <h4 style={{ margin: '0 0 6px 0', color: '#0f172a' }}>Option A: Website Embed Script</h4>
+                <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 12px 0' }}>Paste in your HTML or send straight to your web developer:</p>
                 
                 <textarea 
                   readOnly
@@ -256,7 +286,7 @@ function CustomerDashboard({ businessName, email, onLogout }) {
               {/* Option B: Hosted Standalone Page */}
               <div style={{ border: '2px solid #2563eb', padding: '16px', borderRadius: '8px', backgroundColor: '#eff6ff', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                 <div>
-                  <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#2563eb', textTransform: 'uppercase', marginBottom: '4px' }}>No Website Needed</div>
+                  <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#2563eb', textTransform: 'uppercase', marginBottom: '4px' }}>No Website Required</div>
                   <h4 style={{ margin: '0 0 6px 0', color: '#1e40af' }}>Option B: Dedicated AI Lead Page</h4>
                   <p style={{ fontSize: '13px', color: '#1e3a8a', margin: '0 0 12px 0' }}>Share this link in SMS, social media, or Google Business Profile:</p>
                   
@@ -285,18 +315,31 @@ function CustomerDashboard({ businessName, email, onLogout }) {
         </div>
       )}
 
-      {activeTab === 'preview' && (
-        <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-          <h3 style={{ margin: '0 0 16px 0', fontSize: '18px' }}>Widget & Page Customization</h3>
+      {activeTab === 'customize' && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
           
-          <div style={{ display: 'flex', gap: '30px', alignItems: 'center', marginBottom: '24px', borderBottom: '1px solid #f1f5f9', paddingBottom: '16px' }}>
-            <div>
-              <label style={{ display: 'block', fontSize: '14px', color: '#64748b', marginBottom: '6px' }}>Primary Accent Color</label>
+          <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+            <h3 style={{ margin: '0 0 16px 0', fontSize: '18px' }}>Writable Announcement & Controls</h3>
+            
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: 'bold', color: '#334155', marginBottom: '6px' }}>Special Offer Announcement Banner</label>
+              <input 
+                type="text" 
+                placeholder="e.g. 10% Off First Service Call or Free Estimates!" 
+                value={specialOffer} 
+                onChange={(e) => setSpecialOffer(e.target.value)}
+                style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '14px', boxSizing: 'border-box' }}
+              />
+              <p style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>This text appears instantly at the top of your review widget and hosted page.</p>
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: 'bold', color: '#334155', marginBottom: '6px' }}>Accent Button Color</label>
               <input 
                 type="color" 
                 value={widgetColor} 
                 onChange={(e) => setWidgetColor(e.target.value)}
-                style={{ width: '50px', height: '36px', border: 'none', cursor: 'pointer', borderRadius: '4px' }}
+                style={{ width: '60px', height: '40px', border: 'none', cursor: 'pointer', borderRadius: '4px' }}
               />
             </div>
 
@@ -307,28 +350,35 @@ function CustomerDashboard({ businessName, email, onLogout }) {
                   checked={showPhotoAddon} 
                   onChange={(e) => setShowPhotoAddon(e.target.checked)} 
                 />
-                Google Verified Profile & Map Badge
+                Google Verified Profile Header Badge
               </label>
             </div>
           </div>
 
-          <LocalPulseWidget businessName={activeName} primaryColor={widgetColor} showPhotoAddon={showPhotoAddon} />
+          <div>
+            <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase', marginBottom: '8px', textAlign: 'center' }}>Live Output Preview</div>
+            <LocalPulseWidget 
+              businessName={activeName} 
+              primaryColor={widgetColor} 
+              showPhotoAddon={showPhotoAddon} 
+              specialOffer={specialOffer}
+            />
+          </div>
+
         </div>
       )}
 
       {activeTab === 'billing' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           
-          {/* Addon Highlight */}
           <div style={{ backgroundColor: '#f0fdf4', border: '2px solid #22c55e', padding: '24px', borderRadius: '12px' }}>
-            <span style={{ backgroundColor: '#dcfce7', color: '#15803d', fontSize: '12px', fontWeight: 'bold', padding: '4px 8px', borderRadius: '4px' }}>PRO ADDON INCLUDED IN TRIAL</span>
-            <h3 style={{ margin: '8px 0 4px 0', fontSize: '20px', color: '#166534' }}>Google Business Profile & Map Badge</h3>
-            <p style={{ margin: 0, color: '#15803d', fontSize: '14px' }}>Enhance credibility by featuring live Google Maps verification badges and rating stats directly on your widget and standalone landing pages.</p>
+            <span style={{ backgroundColor: '#dcfce7', color: '#15803d', fontSize: '12px', fontWeight: 'bold', padding: '4px 8px', borderRadius: '4px' }}>PRO ADDONS INCLUDED IN TRIAL</span>
+            <h3 style={{ margin: '8px 0 4px 0', fontSize: '20px', color: '#166534' }}>Google Verified Badge & Writable Promo Banner</h3>
+            <p style={{ margin: 0, color: '#15803d', fontSize: '14px' }}>Increase quote requests by showcasing verified Google Maps badges and custom promo offers directly to local homeowners.</p>
           </div>
 
-          {/* Core Optimized Plans */}
           <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-            <h3 style={{ margin: '0 0 16px 0', fontSize: '20px', color: '#0f172a' }}>Select Your Subscription Plan</h3>
+            <h3 style={{ margin: '0 0 16px 0', fontSize: '20px', color: '#0f172a' }}>Subscription Plans</h3>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px' }}>
               
@@ -346,7 +396,7 @@ function CustomerDashboard({ businessName, email, onLogout }) {
                   </ul>
                 </div>
                 <a href="https://buy.stripe.com/test_monthly" style={{ display: 'block', textAlign: 'center', backgroundColor: '#0f172a', color: '#fff', textDecoration: 'none', padding: '10px', borderRadius: '6px', fontWeight: 'bold', fontSize: '14px', marginTop: '20px' }}>
-                  Subscribe Monthly
+                  Subscribe Monthly ($49)
                 </a>
               </div>
 
@@ -359,13 +409,13 @@ function CustomerDashboard({ businessName, email, onLogout }) {
                   <ul style={{ paddingLeft: '18px', margin: 0, fontSize: '13px', color: '#1e3a8a', lineHeight: '1.8' }}>
                     <li>Everything in Monthly</li>
                     <li>90 Days Full Access</li>
-                    <li><strong>FREE</strong> AI Hosted Landing Page</li>
-                    <li>Priority Email Support</li>
+                    <li><strong>FREE</strong> Dedicated Lead Page</li>
+                    <li>Writable Promo Banner</li>
                     <li><strong>Google Badge Add-on:</strong> +$10/3-mo</li>
                   </ul>
                 </div>
                 <a href="https://buy.stripe.com/test_3month" style={{ display: 'block', textAlign: 'center', backgroundColor: '#2563eb', color: '#fff', textDecoration: 'none', padding: '10px', borderRadius: '6px', fontWeight: 'bold', fontSize: '14px', marginTop: '20px' }}>
-                  Get 3-Month Pass
+                  Get 3-Month Pass ($119)
                 </a>
               </div>
 
@@ -378,12 +428,12 @@ function CustomerDashboard({ businessName, email, onLogout }) {
                   <ul style={{ paddingLeft: '18px', margin: 0, fontSize: '13px', color: '#14532d', lineHeight: '1.8' }}>
                     <li>Everything in 3-Month Pass</li>
                     <li>Equivalent to $24.75/month</li>
-                    <li><strong>Google Badge Add-on:</strong> $15/year</li>
-                    <li>VIP Priority Setup</li>
+                    <li><strong>Google Badge Add-on:</strong> Only $15/year</li>
+                    <li>VIP Setup Assistance</li>
                   </ul>
                 </div>
                 <a href="https://buy.stripe.com/test_annual" style={{ display: 'block', textAlign: 'center', backgroundColor: '#166534', color: '#fff', textDecoration: 'none', padding: '10px', borderRadius: '6px', fontWeight: 'bold', fontSize: '14px', marginTop: '20px' }}>
-                  Get Annual VIP
+                  Get Annual VIP ($297)
                 </a>
               </div>
 
@@ -398,7 +448,7 @@ function CustomerDashboard({ businessName, email, onLogout }) {
 }
 
 // ==========================================
-// 3. MAIN SAAS ROUTER & LANDING PAGE
+// 3. PUBLIC MARKETING SALES LANDING PAGE
 // ==========================================
 export default function LocalPulseSaaS() {
   const [businessName, setBusinessName] = useState('');
@@ -426,11 +476,7 @@ export default function LocalPulseSaaS() {
   if (isStandalonePage) {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc', padding: '40px 20px', fontFamily: 'sans-serif' }}>
-        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-          <h2 style={{ color: '#0f172a', margin: 0 }}>{businessName}</h2>
-          <p style={{ color: '#64748b', margin: '4px 0 0 0' }}>Official Verified Customer Review & Quote Page</p>
-        </div>
-        <LocalPulseWidget businessName={businessName} showPhotoAddon={true} />
+        <LocalPulseWidget businessName={businessName} showPhotoAddon={true} specialOffer="Call Today for Instant Free Estimates!" />
       </div>
     );
   }
@@ -449,18 +495,26 @@ export default function LocalPulseSaaS() {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#0f172a', color: '#f8fafc', fontFamily: 'sans-serif', padding: '40px 20px' }}>
-      <div style={{ maxWidth: '1000px', margin: '0 auto', textAlign: 'center' }}>
-        <h1 style={{ fontSize: '44px', fontWeight: '800', marginBottom: '16px', background: 'linear-gradient(to right, #60a5fa, #a855f7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+      
+      {/* Top Navbar */}
+      <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '60px' }}>
+        <div style={{ fontSize: '22px', fontWeight: '800', color: '#60a5fa' }}>LocalPulse AI</div>
+        <a href="#signup" style={{ backgroundColor: '#2563eb', color: '#fff', padding: '10px 20px', borderRadius: '8px', textDecoration: 'none', fontWeight: 'bold', fontSize: '14px' }}>Start 14-Day Free Trial</a>
+      </div>
+
+      <div style={{ maxWidth: '1100px', margin: '0 auto', textAlign: 'center' }}>
+        <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '20px', background: 'linear-gradient(to right, #60a5fa, #a855f7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', lineHeight: '1.2' }}>
           Turn Local Website Traffic Into High-Paying Clients
         </h1>
-        <p style={{ fontSize: '18px', color: '#94a3b8', maxWidth: '700px', margin: '0 auto 40px auto', lineHeight: '1.6' }}>
-          Display verified 5-star Google reviews and an instant quote request form on your website or dedicated lead page.
+        <p style={{ fontSize: '19px', color: '#94a3b8', maxWidth: '750px', margin: '0 auto 50px auto', lineHeight: '1.6' }}>
+          Display verified 5-star Google reviews and an instant SMS quote request form on your existing website or dedicated AI lead page.
         </p>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', alignItems: 'center', textAlign: 'left', backgroundColor: '#1e293b', padding: '36px', borderRadius: '16px', border: '1px solid #334155' }}>
+        {/* Hero split section */}
+        <div id="signup" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', alignItems: 'center', textAlign: 'left', backgroundColor: '#1e293b', padding: '40px', borderRadius: '16px', border: '1px solid #334155', boxShadow: '0 12px 32px rgba(0,0,0,0.3)' }}>
           
           <div>
-            <h3 style={{ fontSize: '24px', margin: '0 0 8px 0' }}>Start Your 14-Day Free Trial</h3>
+            <h3 style={{ fontSize: '26px', margin: '0 0 8px 0' }}>Activate Free Trial</h3>
             <p style={{ color: '#94a3b8', fontSize: '15px', marginBottom: '24px' }}>No credit card required. Up and running in under 60 seconds.</p>
             
             <form onSubmit={handleSignup} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -493,8 +547,12 @@ export default function LocalPulseSaaS() {
           </div>
 
           <div>
-            <div style={{ fontSize: '13px', textTransform: 'uppercase', letterSpacing: '1px', color: '#64748b', fontWeight: 'bold', marginBottom: '12px' }}>Live Widget Preview</div>
-            <LocalPulseWidget businessName={businessName || "Your Business"} showPhotoAddon={true} />
+            <div style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', color: '#64748b', fontWeight: 'bold', marginBottom: '12px', textAlign: 'center' }}>Live Live Output Preview</div>
+            <LocalPulseWidget 
+              businessName={businessName || "Your Business Name"} 
+              showPhotoAddon={true} 
+              specialOffer="10% Off First Service Call!" 
+            />
           </div>
 
         </div>
