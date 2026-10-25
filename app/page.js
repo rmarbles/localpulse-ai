@@ -1,5 +1,4 @@
-export const dynamic = 'force-dynamic';
-'use client';'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
 
@@ -147,7 +146,6 @@ function CustomerDashboard({ businessName, email, onLogout }) {
   const [showPhotoAddon, setShowPhotoAddon] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
 
-  // Simulated Lead Activity Data
   const [leads] = useState([
     { id: 101, name: "Mark Thompson", phone: "(512) 555-0192", request: "Need quote for hot water heater replacement", date: "Today at 2:14 PM", status: "New Lead" },
     { id: 102, name: "Jessica Alba", phone: "(512) 555-0148", request: "Can I get an estimate for full driveway pressure washing?", date: "Yesterday at 4:30 PM", status: "Contacted" }
@@ -253,7 +251,6 @@ function CustomerDashboard({ businessName, email, onLogout }) {
       {activeTab === 'overview' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           
-          {/* Step 1: Google Profiles */}
           <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
             <h3 style={{ margin: '0 0 8px 0', fontSize: '18px' }}>1. Connect Google Business Profile</h3>
             <p style={{ margin: '0 0 12px 0', fontSize: '14px', color: '#64748b' }}>
@@ -271,13 +268,11 @@ function CustomerDashboard({ businessName, email, onLogout }) {
             </button>
           </div>
 
-          {/* Step 2: Deployment Choices */}
           <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
             <h3 style={{ margin: '0 0 8px 0', fontSize: '18px' }}>2. Choose Deployment Option</h3>
             
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '16px' }}>
               
-              {/* Option A: Website Script */}
               <div style={{ border: '1px solid #e2e8f0', padding: '16px', borderRadius: '8px', backgroundColor: '#f8fafc' }}>
                 <h4 style={{ margin: '0 0 6px 0', color: '#0f172a' }}>Option A: Website Embed Script</h4>
                 <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 12px 0' }}>Paste in your HTML or send straight to your web developer:</p>
@@ -309,7 +304,6 @@ function CustomerDashboard({ businessName, email, onLogout }) {
                 {devEmailSent && <div style={{ color: '#16a34a', fontSize: '12px', marginTop: '4px' }}>✓ Setup instructions emailed!</div>}
               </div>
 
-              {/* Option B: Hosted Standalone Page */}
               <div style={{ border: '2px solid #2563eb', padding: '16px', borderRadius: '8px', backgroundColor: '#eff6ff', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                 <div>
                   <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#2563eb', textTransform: 'uppercase', marginBottom: '4px' }}>No Website Required</div>
@@ -442,7 +436,6 @@ function CustomerDashboard({ businessName, email, onLogout }) {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px' }}>
               
-              {/* Monthly */}
               <div style={{ border: '1px solid #cbd5e1', borderRadius: '10px', padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                 <div>
                   <h4 style={{ margin: '0 0 8px 0', fontSize: '18px', color: '#0f172a' }}>Monthly Standard</h4>
@@ -460,7 +453,6 @@ function CustomerDashboard({ businessName, email, onLogout }) {
                 </a>
               </div>
 
-              {/* 3-Month Pass */}
               <div style={{ border: '2px solid #2563eb', borderRadius: '10px', padding: '20px', backgroundColor: '#eff6ff', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative' }}>
                 <span style={{ position: 'absolute', top: '-12px', right: '16px', backgroundColor: '#2563eb', color: '#fff', fontSize: '11px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '10px' }}>POPULAR</span>
                 <div>
@@ -479,7 +471,6 @@ function CustomerDashboard({ businessName, email, onLogout }) {
                 </a>
               </div>
 
-              {/* Annual VIP */}
               <div style={{ border: '1px solid #86efac', borderRadius: '10px', padding: '20px', backgroundColor: '#f0fdf4', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                 <div>
                   <span style={{ backgroundColor: '#dcfce7', color: '#15803d', fontSize: '11px', fontWeight: 'bold', padding: '2px 6px', borderRadius: '4px' }}>BEST VALUE</span>
@@ -575,4 +566,122 @@ export default function LocalPulseSaaS() {
 
           <div id="signup" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', alignItems: 'center', textAlign: 'left', backgroundColor: '#1e293b', padding: '40px', borderRadius: '16px', border: '1px solid #334155', boxShadow: '0 12px 32px rgba(0,0,0,0.3)' }}>
             <div>
-              <h3 style={{ fontSize: '26px', margin: '0 0 8px
+              <h3 style={{ fontSize: '26px', margin: '0 0 8px 0', color: '#ffffff' }}>Activate Free Trial</h3>
+              <p style={{ color: '#94a3b8', fontSize: '15px', marginBottom: '24px' }}>No credit card required. Up and running in under 60 seconds.</p>
+              
+              <form onSubmit={handleSignup} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div>
+                  <label style={{ fontSize: '14px', color: '#94a3b8', display: 'block', marginBottom: '6px' }}>Business Name</label>
+                  <input 
+                    type="text" 
+                    required 
+                    placeholder="e.g. Austin Mobile Auto Detail" 
+                    value={businessName}
+                    onChange={(e) => setBusinessName(e.target.value)}
+                    style={{ width: '100%', padding: '14px', borderRadius: '8px', border: '1px solid #475569', backgroundColor: '#0f172a', color: '#fff', fontSize: '16px', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '14px', color: '#94a3b8', display: 'block', marginBottom: '6px' }}>Work Email Address</label>
+                  <input 
+                    type="email" 
+                    required 
+                    placeholder="owner@yourbusiness.com" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    style={{ width: '100%', padding: '14px', borderRadius: '8px', border: '1px solid #475569', backgroundColor: '#0f172a', color: '#fff', fontSize: '16px', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <button type="submit" style={{ width: '100%', padding: '16px', backgroundColor: '#2563eb', color: '#fff', fontWeight: 'bold', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '16px' }}>
+                  Launch My Control Panel →
+                </button>
+              </form>
+            </div>
+
+            <div>
+              <div style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', color: '#64748b', fontWeight: 'bold', marginBottom: '12px', textAlign: 'center' }}>Live Output Preview</div>
+              <LocalPulseWidget 
+                businessName={businessName || "Your Business Name"} 
+                showPhotoAddon={true} 
+                specialOffer="10% Off First Service Call!" 
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* 3 Core Benefits Breakdown */}
+        <div style={{ margin: '80px 0', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '32px', color: '#ffffff', marginBottom: '40px' }}>Why Local Trade Businesses Choose LocalPulse AI</h2>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '30px', textAlign: 'left' }}>
+            <div style={{ backgroundColor: '#1e293b', padding: '28px', borderRadius: '12px', border: '1px solid #334155' }}>
+              <div style={{ fontSize: '32px', marginBottom: '12px' }}>⭐</div>
+              <h3 style={{ fontSize: '20px', color: '#60a5fa', margin: '0 0 10px 0' }}>Verified Google Social Proof</h3>
+              <p style={{ color: '#94a3b8', fontSize: '14px', lineHeight: '1.6', margin: 0 }}>Homeowners buy from contractors they trust. Display your live 5-star Google reviews and verified location badges to convert visitors instantly.</p>
+            </div>
+
+            <div style={{ backgroundColor: '#1e293b', padding: '28px', borderRadius: '12px', border: '1px solid #334155' }}>
+              <div style={{ fontSize: '32px', marginBottom: '12px' }}>⚡</div>
+              <h3 style={{ fontSize: '20px', color: '#60a5fa', margin: '0 0 10px 0' }}>Instant SMS Lead Routing</h3>
+              <p style={{ color: '#94a3b8', fontSize: '14px', lineHeight: '1.6', margin: 0 }}>Never let a lead go cold. When a visitor requests a quote, details are sent directly to your phone so you can respond within minutes on job sites.</p>
+            </div>
+
+            <div style={{ backgroundColor: '#1e293b', padding: '28px', borderRadius: '12px', border: '1px solid #334155' }}>
+              <div style={{ fontSize: '32px', marginBottom: '12px' }}>🚀</div>
+              <h3 style={{ fontSize: '20px', color: '#60a5fa', margin: '0 0 10px 0' }}>Zero-Code Standalone Page</h3>
+              <p style={{ color: '#94a3b8', fontSize: '14px', lineHeight: '1.6', margin: 0 }}>Don't have a website? No problem. Get a dedicated, hosted lead generation link you can share directly on Facebook, Google Maps, or in text messages.</p>
+            </div>
+          </div>
+        </div>
+
+        {/* How It Works Section */}
+        <div style={{ backgroundColor: '#1e293b', padding: '40px', borderRadius: '16px', border: '1px solid #334155', margin: '80px 0', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '32px', color: '#ffffff', marginBottom: '30px' }}>Up and Running in 3 Simple Steps</h2>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px', textAlign: 'left' }}>
+            <div style={{ backgroundColor: '#0f172a', padding: '20px', borderRadius: '10px' }}>
+              <div style={{ color: '#2563eb', fontWeight: 'bold', fontSize: '14px' }}>STEP 1</div>
+              <h4 style={{ color: '#fff', fontSize: '18px', margin: '6px 0' }}>Paste Google Maps Link</h4>
+              <p style={{ color: '#94a3b8', fontSize: '13px', margin: 0 }}>Search your business on Google Maps and paste the link to sync your 5-star reviews.</p>
+            </div>
+            
+            <div style={{ backgroundColor: '#0f172a', padding: '20px', borderRadius: '10px' }}>
+              <div style={{ color: '#2563eb', fontWeight: 'bold', fontSize: '14px' }}>STEP 2</div>
+              <h4 style={{ color: '#fff', fontSize: '18px', margin: '6px 0' }}>Select Deployment</h4>
+              <p style={{ color: '#94a3b8', fontSize: '13px', margin: 0 }}>Copy the 1-line script for your website or use your dedicated standalone AI lead page.</p>
+            </div>
+
+            <div style={{ backgroundColor: '#0f172a', padding: '20px', borderRadius: '10px' }}>
+              <div style={{ color: '#2563eb', fontWeight: 'bold', fontSize: '14px' }}>STEP 3</div>
+              <h4 style={{ color: '#fff', fontSize: '18px', margin: '6px 0' }}>Receive Quote Leads</h4>
+              <p style={{ color: '#94a3b8', fontSize: '13px', margin: 0 }}>Watch quote requests arrive on your phone via instant text and email alerts.</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Frequently Asked Questions */}
+        <div style={{ margin: '80px 0', maxWidth: '800px', margin: '0 auto 80px auto' }}>
+          <h2 style={{ fontSize: '32px', color: '#ffffff', marginBottom: '30px', textAlign: 'center' }}>Frequently Asked Questions</h2>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ backgroundColor: '#1e293b', padding: '20px', borderRadius: '10px', border: '1px solid #334155' }}>
+              <h4 style={{ margin: '0 0 6px 0', color: '#60a5fa', fontSize: '16px' }}>Do I need web development skills to install this?</h4>
+              <p style={{ margin: 0, color: '#94a3b8', fontSize: '14px' }}>Not at all. You can copy a single line of script to your site, click 'Email Dev' to let us send it to your web person, or simply use your dedicated hosted lead page link without touching code.</p>
+            </div>
+
+            <div style={{ backgroundColor: '#1e293b', padding: '20px', borderRadius: '10px', border: '1px solid #334155' }}>
+              <h4 style={{ margin: '0 0 6px 0', color: '#60a5fa', fontSize: '16px' }}>What happens after my 14-day free trial ends?</h4>
+              <p style={{ margin: 0, color: '#94a3b8', fontSize: '14px' }}>You can select from our flexible Monthly ($49/mo), 3-Month ($119), or Annual VIP ($297/yr) pass plans directly inside your billing portal. No lock-in contracts.</p>
+            </div>
+
+            <div style={{ backgroundColor: '#1e293b', padding: '20px', borderRadius: '10px', border: '1px solid #334155' }}>
+              <h4 style={{ margin: '0 0 6px 0', color: '#60a5fa', fontSize: '16px' }}>Can I customize the special promo banner?</h4>
+              <p style={{ margin: 0, color: '#94a3b8', fontSize: '14px' }}>Yes! Inside your portal, you can write custom announcements like "10% Off First Service Call" or "Free Emergency Estimates" whenever you want to run a campaign.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}
