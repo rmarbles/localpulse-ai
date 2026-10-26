@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import React, { useState, useEffect } from 'react';
 
 // ==========================================
@@ -162,7 +164,7 @@ function CustomerDashboard({ businessName, email, onLogout }) {
 
   const handleSync = async () => {
     if (!googleUrl) {
-      alert("Please paste your Google Maps link first!");
+      alert("Please paste your Google Maps link or business name first!");
       return;
     }
     
@@ -174,17 +176,16 @@ function CustomerDashboard({ businessName, email, onLogout }) {
       });
       
       const data = await res.json();
-      if (data.reviews && data.reviews.length > 0) {
+      
+      if (data.success && data.reviews && data.reviews.length > 0) {
         setLiveReviews(data.reviews);
         setSynced(true);
-        alert("✓ Successfully fetched and synced live Google reviews!");
+        alert(`✓ Successfully synced ${data.reviews.length} live reviews from Google Maps!`);
       } else {
-        setSynced(true);
-        alert("✓ Google Business Profile connected!");
+        alert(`Sync Error: ${data.error || 'Could not retrieve reviews. Please check your query.'}`);
       }
     } catch (err) {
-      setSynced(true);
-      alert("Sync complete using verified business profile.");
+      alert(`Network Error: ${err.message}`);
     }
   };
 
@@ -695,19 +696,4 @@ export default function LocalPulseSaaS() {
               <p style={{ margin: 0, color: '#94a3b8', fontSize: '14px' }}>Not at all. You can copy a single line of script to your site, click 'Email Dev' to let us send it to your web person, or simply use your dedicated hosted lead page link without touching code.</p>
             </div>
 
-            <div style={{ backgroundColor: '#1e293b', padding: '20px', borderRadius: '10px', border: '1px solid #334155' }}>
-              <h4 style={{ margin: '0 0 6px 0', color: '#60a5fa', fontSize: '16px' }}>What happens after my 14-day free trial ends?</h4>
-              <p style={{ margin: 0, color: '#94a3b8', fontSize: '14px' }}>You can select from our flexible Monthly ($49/mo), 3-Month ($119), or Annual VIP ($297/yr) pass plans directly inside your billing portal. No lock-in contracts.</p>
-            </div>
-
-            <div style={{ backgroundColor: '#1e293b', padding: '20px', borderRadius: '10px', border: '1px solid #334155' }}>
-              <h4 style={{ margin: '0 0 6px 0', color: '#60a5fa', fontSize: '16px' }}>Can I customize the special promo banner?</h4>
-              <p style={{ margin: 0, color: '#94a3b8', fontSize: '14px' }}>Yes! Inside your portal, you can write custom announcements like "10% Off First Service Call" or "Free Emergency Estimates" whenever you want to run a campaign.</p>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  );
-}
+            <div style={{ backgroundColor: '#1e293b', padding: '20px', borderRadius
