@@ -205,7 +205,6 @@ function CustomerDashboard({ businessName, email, onLogout }) {
         setLiveReviews(data.reviews);
         localStorage.setItem('lp_reviews', JSON.stringify(data.reviews));
         setSynced(true);
-        alert(`✓ Successfully synced ${data.reviews.length} live reviews! Click on Tab 3 'Promo Banner & Customizer' or 'Preview Page ↗' under Option B to view your live output.`);
       } else {
         alert(`Sync Error: ${data.error || 'Could not retrieve reviews. Please check your query.'}`);
       }
@@ -314,16 +313,28 @@ function CustomerDashboard({ businessName, email, onLogout }) {
               onChange={(e) => setGoogleUrl(e.target.value)}
               style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', boxSizing: 'border-box', marginBottom: '12px' }}
             />
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <button onClick={handleSync} style={{ backgroundColor: '#0f172a', color: '#fff', padding: '12px 18px', borderRadius: '8px', border: 'none', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' }}>
-                {liveReviews.length > 0 ? '✓ Live Google Reviews Synced' : 'Sync Live Google Reviews'}
-              </button>
-              {synced && (
-                <span style={{ fontSize: '13px', color: '#2563eb', fontWeight: '600' }}>
-                  👈 Click Tab 3 above or 'Preview Page ↗' below to see live output!
-                </span>
-              )}
-            </div>
+            
+            <button onClick={handleSync} style={{ backgroundColor: '#0f172a', color: '#fff', padding: '12px 18px', borderRadius: '8px', border: 'none', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' }}>
+              {liveReviews.length > 0 ? `✓ Synced (${liveReviews.length} Reviews Loaded)` : 'Sync Live Google Reviews'}
+            </button>
+
+            {/* Prominent Guidance Box After Syncing */}
+            {synced && (
+              <div style={{ marginTop: '16px', backgroundColor: '#eff6ff', border: '1px solid #2563eb', padding: '14px', borderRadius: '8px', color: '#1e40af', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div>
+                  <strong>✓ Successfully Synced!</strong> Your live reviews are locked in. 
+                  <div style={{ fontSize: '13px', marginTop: '2px', color: '#1e3a8a' }}>
+                    👉 Click <strong>Tab 3: Promo Banner & Customizer 🎁</strong> above to preview your live widget, or click <strong>Preview Page ↗</strong> below under Option B.
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setActiveTab('customize')} 
+                  style={{ backgroundColor: '#2563eb', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '12px', whiteSpace: 'nowrap' }}
+                >
+                  View Customizer 🎁
+                </button>
+              </div>
+            )}
           </div>
 
           <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
@@ -601,7 +612,6 @@ export default function LocalPulseSaaS() {
   if (isStandalonePage) {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc', padding: '40px 20px', fontFamily: 'sans-serif' }}>
-        {/* Navigation Back Button using window.history.back() */}
         <div style={{ maxWidth: '420px', margin: '0 auto 16px auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <button 
             onClick={() => window.history.back()} 
