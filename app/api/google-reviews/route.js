@@ -15,7 +15,6 @@ export async function POST(req) {
 
     const cacheKey = query.toLowerCase();
 
-    // 1. Check in-memory cache ($0 cost, instant response)
     const cachedEntry = reviewCache.get(cacheKey);
     if (cachedEntry && (Date.now() - cachedEntry.timestamp < CACHE_DURATION)) {
       return Response.json({ success: true, reviews: cachedEntry.reviews, cached: true });
@@ -29,8 +28,8 @@ export async function POST(req) {
       );
     }
 
-    // 2. Query Outscraper API
-    const url = `https://api.app.outscraper.com/maps/reviews-v3?query=${encodeURIComponent(query)}&limit=5&async=false`;
+    // Increased limit to 8 so "See More Reviews" has plenty of authentic content to show
+    const url = `https://api.app.outscraper.com/maps/reviews-v3?query=${encodeURIComponent(query)}&limit=8&async=false`;
     const response = await fetch(url, { 
       method: 'GET',
       headers: { 'X-API-KEY': apiKey } 
@@ -45,7 +44,6 @@ export async function POST(req) {
       );
     }
 
-    // 3. Extract review payload across all possible Outscraper data structures
     let rawReviews = [];
     const data = json.data || json;
     
@@ -65,14 +63,13 @@ export async function POST(req) {
       );
     }
 
-    // 4. Map real scraped reviews
-    const liveReviews = rawReviews.slice(0, 3).map((r) => ({
+    // Map up to 8 live scraped reviews
+    const liveReviews = rawReviews.slice(0, 8).map((r) => ({
       author: r.author_title || r.author_name || r.name || "Verified Customer",
       rating: r.review_rating || r.rating || 5,
       text: r.review_text || r.text || r.snippet || "Outstanding service!"
     }));
 
-    // 5. Save into cache
     reviewCache.set(cacheKey, {
       timestamp: Date.now(),
       reviews: liveReviews
