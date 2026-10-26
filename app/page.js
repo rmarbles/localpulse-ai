@@ -142,8 +142,8 @@ export function LocalPulseWidget({
 // ==========================================
 function CustomerDashboard({ businessName, email, onLogout }) {
   const [googleUrl, setGoogleUrl] = useState('');
-  const [widgetColor, setWidgetColor] = useState('#2563eb');
-  const [specialOffer, setSpecialOffer] = useState('10% Off Your First Service Call!');
+  const [widgetColor, setWidgetColor] = useState(() => localStorage.getItem('lp_color') || '#2563eb');
+  const [specialOffer, setSpecialOffer] = useState(() => localStorage.getItem('lp_offer') || '10% Off Your First Service Call!');
   const [copiedCode, setCopiedCode] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [devEmail, setDevEmail] = useState('');
@@ -151,7 +151,11 @@ function CustomerDashboard({ businessName, email, onLogout }) {
   const [synced, setSynced] = useState(false);
   const [showPhotoAddon, setShowPhotoAddon] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
-  const [liveReviews, setLiveReviews] = useState([]);
+  
+  const [liveReviews, setLiveReviews] = useState(() => {
+    const saved = localStorage.getItem('lp_reviews');
+    return saved ? JSON.parse(saved) : [];
+  });
 
   const [leads] = useState([
     { id: 101, name: "Mark Thompson", phone: "(512) 555-0192", request: "Need quote for hot water heater replacement", date: "Today at 2:14 PM", status: "New Lead" },
@@ -162,9 +166,15 @@ function CustomerDashboard({ businessName, email, onLogout }) {
   const embedCode = `<script src="https://localpulse-ai-sute.vercel.app/widget.js" data-business="${encodeURIComponent(activeName)}" data-color="${widgetColor}"></script>`;
   const hostedPageLink = `https://localpulse-ai-sute.vercel.app/?business=${encodeURIComponent(activeName)}&mode=page`;
 
+  // Save settings to LocalStorage on change
+  useEffect(() => {
+    localStorage.setItem('lp_color', widgetColor);
+    localStorage.setItem('lp_offer', specialOffer);
+  }, [widgetColor, specialOffer]);
+
   const handleSync = async () => {
     if (!googleUrl) {
-      alert("Please paste your Google Maps link or business name first!");
+      alert("Please paste your Google Maps link or business name (e.g., 'Joe's Auto, Austin TX') first!");
       return;
     }
     
@@ -179,6 +189,7 @@ function CustomerDashboard({ businessName, email, onLogout }) {
       
       if (data.success && data.reviews && data.reviews.length > 0) {
         setLiveReviews(data.reviews);
+        localStorage.setItem('lp_reviews', JSON.stringify(data.reviews));
         setSynced(true);
         alert(`✓ Successfully synced ${data.reviews.length} live reviews from Google Maps!`);
       } else {
@@ -280,17 +291,17 @@ function CustomerDashboard({ businessName, email, onLogout }) {
           <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
             <h3 style={{ margin: '0 0 8px 0', fontSize: '18px' }}>1. Connect Google Business Profile</h3>
             <p style={{ margin: '0 0 12px 0', fontSize: '14px', color: '#64748b' }}>
-              Search your business on <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb', fontWeight: 'bold' }}>Google Maps</a>, click <strong>Share</strong>, and paste your link below:
+              For best results, type your <strong>Business Name, City, State</strong> (e.g. <em>Joe's Auto Repair, Austin TX</em>) or paste your Google Maps link:
             </p>
             <input 
               type="text" 
-              placeholder="e.g. https://maps.app.goo.gl/..." 
+              placeholder="e.g. Joe's Auto Repair, Austin TX" 
               value={googleUrl}
               onChange={(e) => setGoogleUrl(e.target.value)}
               style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', boxSizing: 'border-box', marginBottom: '12px' }}
             />
             <button onClick={handleSync} style={{ backgroundColor: '#0f172a', color: '#fff', padding: '12px 18px', borderRadius: '8px', border: 'none', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' }}>
-              {synced ? '✓ Google Profile & Reviews Synced' : 'Sync Live Google Reviews'}
+              {liveReviews.length > 0 ? '✓ Live Google Reviews Synced' : 'Sync Live Google Reviews'}
             </button>
           </div>
 
@@ -526,13 +537,14 @@ function CustomerDashboard({ businessName, email, onLogout }) {
 }
 
 // ==========================================
-// 3. PUBLIC MARKETING SALES LANDING PAGE
+// 3. PUBLIC MARKETING SALES LANDING PAGE & OPTION B STANDALONE PAGE
 // ==========================================
 export default function LocalPulseSaaS() {
   const [businessName, setBusinessName] = useState('');
   const [email, setEmail] = useState('');
   const [activeUser, setActiveUser] = useState(null);
   const [isStandalonePage, setIsStandalonePage] = useState(false);
+  const [standaloneReviews, setStandaloneReviews] = useState([]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -543,6 +555,21 @@ export default function LocalPulseSaaS() {
     if (mode === 'page' && bName) {
       setIsStandalonePage(true);
       setBusinessName(bName);
+
+      // Automatically fetch live reviews for Option B standalone page
+      fetch('/api/google-reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ businessName: bName })
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.reviews && data.reviews.length > 0) {
+            setStandaloneReviews(data.reviews);
+          }
+        })
+        .catch((err) => console.error("Standalone review fetch error:", err));
+
       return;
     }
 
@@ -554,7 +581,19 @@ export default function LocalPulseSaaS() {
   if (isStandalonePage) {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc', padding: '40px 20px', fontFamily: 'sans-serif' }}>
-        <LocalPulseWidget businessName={businessName} showPhotoAddon={true} specialOffer="Call Today for Instant Free Estimates!" />
+        {/* Navigation Return Button back to dashboard */}
+        <div style={{ maxWidth: '420px', margin: '0 auto 16px auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <a href="/" style={{ fontSize: '13px', color: '#2563eb', textDecoration: 'none', fontWeight: 'bold' }}>
+            ← Return to Dashboard
+          </a>
+          <span style={{ fontSize: '12px', color: '#64748b' }}>Powered by LocalPulse AI</span>
+        </div>
+        <LocalPulseWidget 
+          businessName={businessName} 
+          showPhotoAddon={true} 
+          specialOffer="Call Today for Instant Free Estimates!" 
+          reviews={standaloneReviews}
+        />
       </div>
     );
   }
@@ -668,8 +707,8 @@ export default function LocalPulseSaaS() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px', textAlign: 'left' }}>
             <div style={{ backgroundColor: '#0f172a', padding: '20px', borderRadius: '10px' }}>
               <div style={{ color: '#2563eb', fontWeight: 'bold', fontSize: '14px' }}>STEP 1</div>
-              <h4 style={{ color: '#fff', fontSize: '18px', margin: '6px 0' }}>Paste Google Maps Link</h4>
-              <p style={{ color: '#94a3b8', fontSize: '13px', margin: 0 }}>Search your business on Google Maps and paste the link to sync your 5-star reviews.</p>
+              <h4 style={{ color: '#fff', fontSize: '18px', margin: '6px 0' }}>Enter Business Name & City</h4>
+              <p style={{ color: '#94a3b8', fontSize: '13px', margin: 0 }}>Type your business name and city to instantly sync your 5-star reviews.</p>
             </div>
             
             <div style={{ backgroundColor: '#0f172a', padding: '20px', borderRadius: '10px' }}>
