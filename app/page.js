@@ -17,15 +17,20 @@ export function LocalPulseWidget({
 }) {
   const defaultReviews = [
     { author: "Sarah M.", rating: 5, text: "Outstanding service! Arrived promptly and fixed our issue cleanly." },
-    { author: "David K.", rating: 5, text: "Fair pricing, reliable communication, and highly recommended!" }
+    { author: "David K.", rating: 5, text: "Fair pricing, reliable communication, and highly recommended!" },
+    { author: "Michael R.", rating: 5, text: "Top-tier professionalism. Will definitely be a repeat customer." },
+    { author: "Elena T.", rating: 5, text: "Extremely thorough, honest work, and transparent quotes." }
   ];
 
   const activeReviews = (reviews && reviews.length > 0) ? reviews : defaultReviews;
 
+  const [expandedReviews, setExpandedReviews] = useState(false);
   const [leadQuestion, setLeadQuestion] = useState('');
   const [leadPhone, setLeadPhone] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const displayedReviews = expandedReviews ? activeReviews : activeReviews.slice(0, 2);
 
   const handleLeadSubmit = async (e) => {
     e.preventDefault();
@@ -88,8 +93,8 @@ export function LocalPulseWidget({
         )}
 
         {/* Dynamic Reviews Container */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
-          {activeReviews.map((r, i) => (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '12px' }}>
+          {displayedReviews.map((r, i) => (
             <div key={i} style={{ backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px', fontSize: '13px', border: '1px solid #f1f5f9' }}>
               <div style={{ fontWeight: '600', color: '#334155', display: 'flex', justifyContent: 'space-between' }}>
                 <span>{r.author}</span>
@@ -99,6 +104,16 @@ export function LocalPulseWidget({
             </div>
           ))}
         </div>
+
+        {/* See More Reviews Button */}
+        {activeReviews.length > 2 && (
+          <button 
+            onClick={() => setExpandedReviews(!expandedReviews)} 
+            style={{ width: '100%', backgroundColor: '#f1f5f9', border: '1px solid #cbd5e1', color: '#334155', padding: '8px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', marginBottom: '16px' }}
+          >
+            {expandedReviews ? 'Show Fewer Reviews ▲' : `See More Reviews (${activeReviews.length}) ▼`}
+          </button>
+        )}
 
         {/* Lead Capture Block */}
         <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '14px' }}>
@@ -166,7 +181,6 @@ function CustomerDashboard({ businessName, email, onLogout }) {
   const embedCode = `<script src="https://localpulse-ai-sute.vercel.app/widget.js" data-business="${encodeURIComponent(activeName)}" data-color="${widgetColor}"></script>`;
   const hostedPageLink = `https://localpulse-ai-sute.vercel.app/?business=${encodeURIComponent(activeName)}&mode=page`;
 
-  // Save settings to LocalStorage on change
   useEffect(() => {
     localStorage.setItem('lp_color', widgetColor);
     localStorage.setItem('lp_offer', specialOffer);
@@ -191,7 +205,7 @@ function CustomerDashboard({ businessName, email, onLogout }) {
         setLiveReviews(data.reviews);
         localStorage.setItem('lp_reviews', JSON.stringify(data.reviews));
         setSynced(true);
-        alert(`✓ Successfully synced ${data.reviews.length} live reviews from Google Maps!`);
+        alert(`✓ Successfully synced ${data.reviews.length} live reviews! Click on Tab 3 'Promo Banner & Customizer' or 'Preview Page ↗' under Option B to view your live output.`);
       } else {
         alert(`Sync Error: ${data.error || 'Could not retrieve reviews. Please check your query.'}`);
       }
@@ -291,7 +305,7 @@ function CustomerDashboard({ businessName, email, onLogout }) {
           <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
             <h3 style={{ margin: '0 0 8px 0', fontSize: '18px' }}>1. Connect Google Business Profile</h3>
             <p style={{ margin: '0 0 12px 0', fontSize: '14px', color: '#64748b' }}>
-              For best results, type your <strong>Business Name, City, State</strong> (e.g. <em>Joe's Auto Repair, Austin TX</em>) or paste your Google Maps link:
+              Type your <strong>Business Name, City, State</strong> (e.g. <em>Joe's Auto Repair, Austin TX</em>) or paste your Google Maps link:
             </p>
             <input 
               type="text" 
@@ -300,9 +314,16 @@ function CustomerDashboard({ businessName, email, onLogout }) {
               onChange={(e) => setGoogleUrl(e.target.value)}
               style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', boxSizing: 'border-box', marginBottom: '12px' }}
             />
-            <button onClick={handleSync} style={{ backgroundColor: '#0f172a', color: '#fff', padding: '12px 18px', borderRadius: '8px', border: 'none', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' }}>
-              {liveReviews.length > 0 ? '✓ Live Google Reviews Synced' : 'Sync Live Google Reviews'}
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <button onClick={handleSync} style={{ backgroundColor: '#0f172a', color: '#fff', padding: '12px 18px', borderRadius: '8px', border: 'none', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' }}>
+                {liveReviews.length > 0 ? '✓ Live Google Reviews Synced' : 'Sync Live Google Reviews'}
+              </button>
+              {synced && (
+                <span style={{ fontSize: '13px', color: '#2563eb', fontWeight: '600' }}>
+                  👈 Click Tab 3 above or 'Preview Page ↗' below to see live output!
+                </span>
+              )}
+            </div>
           </div>
 
           <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
@@ -556,7 +577,6 @@ export default function LocalPulseSaaS() {
       setIsStandalonePage(true);
       setBusinessName(bName);
 
-      // Automatically fetch live reviews for Option B standalone page
       fetch('/api/google-reviews', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -581,11 +601,14 @@ export default function LocalPulseSaaS() {
   if (isStandalonePage) {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc', padding: '40px 20px', fontFamily: 'sans-serif' }}>
-        {/* Navigation Return Button back to dashboard */}
+        {/* Navigation Back Button using window.history.back() */}
         <div style={{ maxWidth: '420px', margin: '0 auto 16px auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <a href="/" style={{ fontSize: '13px', color: '#2563eb', textDecoration: 'none', fontWeight: 'bold' }}>
-            ← Return to Dashboard
-          </a>
+          <button 
+            onClick={() => window.history.back()} 
+            style={{ backgroundColor: 'transparent', border: 'none', color: '#2563eb', fontWeight: 'bold', fontSize: '13px', cursor: 'pointer', padding: 0 }}
+          >
+            ← Back to Control Panel
+          </button>
           <span style={{ fontSize: '12px', color: '#64748b' }}>Powered by LocalPulse AI</span>
         </div>
         <LocalPulseWidget 
