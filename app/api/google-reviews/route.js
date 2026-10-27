@@ -4,17 +4,18 @@ const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 Hours
 export async function POST(req) {
   try {
     const { googleUrl, businessName } = await req.json();
-    const query = (businessName || googleUrl || "").trim();
+    const rawQuery = (businessName || googleUrl || "").trim();
 
-    if (!query) {
+    if (!rawQuery) {
       return Response.json(
-        { success: false, error: "Please provide a valid business name or location query." },
+        { success: false, error: "Please provide a valid business name and city/state." },
         { status: 400 }
       );
     }
 
-    const cacheKey = query.toLowerCase();
+    const cacheKey = rawQuery.toLowerCase();
 
+    // 1. Check in-memory cache ($0 cost)
     const cachedEntry = reviewCache.get(cacheKey);
     if (cachedEntry && (Date.now() - cachedEntry.timestamp < CACHE_DURATION)) {
       return Response.json({ success: true, reviews: cachedEntry.reviews, cached: true });
@@ -23,13 +24,13 @@ export async function POST(req) {
     const apiKey = process.env.OUTSCRAPER_API_KEY || process.env.GOOGLE_PLACES_API_KEY;
     if (!apiKey) {
       return Response.json(
-        { success: false, error: "Missing OUTSCRAPER_API_KEY environment variable in Vercel settings." },
+        { success: false, error: "Missing OUTSCRAPER_API_KEY in Vercel environment variables." },
         { status: 500 }
       );
     }
 
-    // Increased limit to 8 so "See More Reviews" has plenty of authentic content to show
-    const url = `https://api.app.outscraper.com/maps/reviews-v3?query=${encodeURIComponent(query)}&limit=8&async=false`;
+    // 2. Query Outscraper API with strict 8-review limit
+    const url = `https://api.app.outscraper.com/maps/reviews-v3?query=${encodeURIComponent(rawQuery)}&limit=10&async=false`;
     const response = await fetch(url, { 
       method: 'GET',
       headers: { 'X-API-KEY': apiKey } 
@@ -44,6 +45,7 @@ export async function POST(req) {
       );
     }
 
+    // 3. Extract place & review array
     let rawReviews = [];
     const data = json.data || json;
     
@@ -58,24 +60,39 @@ export async function POST(req) {
 
     if (!rawReviews || rawReviews.length === 0) {
       return Response.json(
-        { success: false, error: "No reviews found. Try entering 'Business Name, City State' (e.g., 'Joe's Auto Repair, Austin TX')." },
+        { success: false, error: "No reviews found for this exact business name. Please include business name, city, and state (e.g. 'Tataros Gymnastics, Knoxville TN')." },
         { status: 404 }
       );
     }
 
-    // Map up to 8 live scraped reviews
-    const liveReviews = rawReviews.slice(0, 8).map((r) => ({
-      author: r.author_title || r.author_name || r.name || "Verified Customer",
-      rating: r.review_rating || r.rating || 5,
-      text: r.review_text || r.text || r.snippet || "Outstanding service!"
-    }));
+    // 4. Strictly filter for 4-star and 5-star positive reviews ONLY
+    const positiveReviews = rawReviews
+      .filter((r) => {
+        const rating = r.review_rating || r.rating || 5;
+        return rating >= 4;
+      })
+      .map((r) => ({
+        author: r.author_title || r.author_name || r.name || "Verified Customer",
+        rating: r.review_rating || r.rating || 5,
+        text: r.review_text || r.text || r.snippet || "Great experience and highly recommended!"
+      }));
 
+    if (positiveReviews.length === 0) {
+      return Response.json(
+        { success: false, error: "No 4-star or 5-star reviews were found for this business listing." },
+        { status: 404 }
+      );
+    }
+
+    const finalReviews = positiveReviews.slice(0, 8);
+
+    // 5. Cache result
     reviewCache.set(cacheKey, {
       timestamp: Date.now(),
-      reviews: liveReviews
+      reviews: finalReviews
     });
 
-    return Response.json({ success: true, reviews: liveReviews, cached: false });
+    return Response.json({ success: true, reviews: finalReviews, cached: false });
 
   } catch (error) {
     console.error('Outscraper API Exception:', error);
