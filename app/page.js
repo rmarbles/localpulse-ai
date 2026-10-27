@@ -22,7 +22,9 @@ export function LocalPulseWidget({
     { author: "Elena T.", rating: 5, text: "Extremely thorough, honest work, and transparent quotes." }
   ];
 
-  const activeReviews = (reviews && reviews.length > 0) ? reviews : defaultReviews;
+  // Filter incoming reviews to ONLY keep 4 or 5-star reviews (safety check against bad/negative scrapes)
+  const rawActiveReviews = (reviews && reviews.length > 0) ? reviews : defaultReviews;
+  const activeReviews = rawActiveReviews.filter(r => Number(r.rating) >= 4);
 
   const [expandedReviews, setExpandedReviews] = useState(false);
   const [leadQuestion, setLeadQuestion] = useState('');
@@ -35,7 +37,7 @@ export function LocalPulseWidget({
   const handleLeadSubmit = async (e) => {
     e.preventDefault();
     if (!leadQuestion || !leadPhone) {
-      alert("Please enter both your quote request and phone number!");
+      alert("Please enter what you need help with and your phone number!");
       return;
     }
     
@@ -45,7 +47,7 @@ export function LocalPulseWidget({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          leadText: `Quote Request: ${leadQuestion} | Phone: ${leadPhone}`, 
+          leadText: `Request: ${leadQuestion} | Phone: ${leadPhone}`, 
           businessName 
         })
       });
@@ -72,7 +74,7 @@ export function LocalPulseWidget({
             <span style={{ fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#86efac' }}>Verified Google Profile</span>
           </div>
           <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 'bold', color: '#ffffff' }}>{businessName || 'Your Business Name'}</h3>
-          <div style={{ fontSize: '13px', color: '#94a3b8', marginTop: '4px' }}>★★★★★ 5.0 Rating on Google Maps</div>
+          <div style={{ fontSize: '13px', color: '#94a3b8', marginTop: '4px' }}>★★★★★ Verified Customer Feedback</div>
         </div>
       )}
 
@@ -81,28 +83,34 @@ export function LocalPulseWidget({
         {!showPhotoAddon && (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
             <h4 style={{ margin: 0, fontSize: '18px', color: '#0f172a' }}>{businessName || 'Your Business Name'}</h4>
-            <span style={{ backgroundColor: '#fef3c7', color: '#d97706', fontSize: '12px', fontWeight: 'bold', padding: '4px 10px', borderRadius: '12px' }}>★ 5.0 Rated</span>
+            <span style={{ backgroundColor: '#fef3c7', color: '#d97706', fontSize: '12px', fontWeight: 'bold', padding: '4px 10px', borderRadius: '12px' }}>★ Top Rated</span>
           </div>
         )}
 
         {/* Custom Writable Promo Block */}
         {specialOffer && (
           <div style={{ backgroundColor: '#eff6ff', border: '1px dashed #2563eb', borderRadius: '8px', padding: '12px', marginBottom: '16px', color: '#1e40af', fontSize: '13px', textAlign: 'center', fontWeight: '600' }}>
-            🎁 <strong>Special Promotion:</strong> {specialOffer}
+            🎁 <strong>Special Offer:</strong> {specialOffer}
           </div>
         )}
 
         {/* Dynamic Reviews Container */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '12px' }}>
-          {displayedReviews.map((r, i) => (
-            <div key={i} style={{ backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px', fontSize: '13px', border: '1px solid #f1f5f9' }}>
-              <div style={{ fontWeight: '600', color: '#334155', display: 'flex', justifyContent: 'space-between' }}>
-                <span>{r.author}</span>
-                <span style={{ color: '#eab308' }}>★★★★★</span>
+          {displayedReviews.length > 0 ? (
+            displayedReviews.map((r, i) => (
+              <div key={i} style={{ backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px', fontSize: '13px', border: '1px solid #f1f5f9' }}>
+                <div style={{ fontWeight: '600', color: '#334155', display: 'flex', justifyContent: 'space-between' }}>
+                  <span>{r.author}</span>
+                  <span style={{ color: '#eab308' }}>{'★'.repeat(Number(r.rating) || 5)}</span>
+                </div>
+                <p style={{ margin: '4px 0 0 0', color: '#64748b' }}>"{r.text}"</p>
               </div>
-              <p style={{ margin: '4px 0 0 0', color: '#64748b' }}>"{r.text}"</p>
+            ))
+          ) : (
+            <div style={{ textAlign: 'center', color: '#64748b', fontSize: '13px', padding: '10px' }}>
+              Loading verified reviews...
             </div>
-          ))}
+          )}
         </div>
 
         {/* See More Reviews Button */}
@@ -115,12 +123,12 @@ export function LocalPulseWidget({
           </button>
         )}
 
-        {/* Lead Capture Block */}
+        {/* Lead Capture Block with Generic Copy */}
         <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '14px' }}>
-          <p style={{ margin: '0 0 8px 0', fontSize: '14px', fontWeight: '600', color: '#0f172a' }}>Request an Instant Quote:</p>
+          <p style={{ margin: '0 0 8px 0', fontSize: '14px', fontWeight: '600', color: '#0f172a' }}>Get in Touch / Request Info:</p>
           {submitted ? (
             <div style={{ color: '#16a34a', backgroundColor: '#f0fdf4', padding: '12px', borderRadius: '6px', fontSize: '13px', fontWeight: '500', textAlign: 'center' }}>
-              ✓ Quote request sent! We will text you shortly at {leadPhone}.
+              ✓ Request sent! We will text you shortly at {leadPhone}.
             </div>
           ) : (
             <form onSubmit={handleLeadSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -134,13 +142,13 @@ export function LocalPulseWidget({
               <div style={{ display: 'flex', gap: '6px' }}>
                 <input 
                   type="tel" 
-                  placeholder="Cell # for SMS Quote" 
+                  placeholder="Cell # for Fast Response" 
                   value={leadPhone}
                   onChange={(e) => setLeadPhone(e.target.value)}
                   style={{ flex: 1, padding: '10px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }}
                 />
                 <button type="submit" disabled={loading} style={{ backgroundColor: primaryColor, color: '#fff', border: 'none', borderRadius: '6px', padding: '10px 14px', fontSize: '13px', cursor: 'pointer', fontWeight: '600' }}>
-                  {loading ? '...' : 'Get Quote'}
+                  {loading ? '...' : 'Send'}
                 </button>
               </div>
             </form>
@@ -439,52 +447,54 @@ function CustomerDashboard({ businessName, email, onLogout }) {
       )}
 
       {activeTab === 'customize' && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', alignItems: 'start' }}>
           
           <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-            <h3 style={{ margin: '0 0 16px 0', fontSize: '18px' }}>Writable Announcement & Controls</h3>
+            <h3 style={{ margin: '0 0 16px 0', fontSize: '18px', color: '#0f172a' }}>Customize Widget Appearance</h3>
             
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', fontSize: '14px', fontWeight: 'bold', color: '#334155', marginBottom: '6px' }}>Special Offer Announcement Banner</label>
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', marginBottom: '6px', color: '#475569' }}>Primary Brand Color:</label>
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <input 
+                  type="color" 
+                  value={widgetColor} 
+                  onChange={(e) => setWidgetColor(e.target.value)}
+                  style={{ width: '40px', height: '40px', border: 'none', cursor: 'pointer', borderRadius: '4px' }}
+                />
+                <span style={{ fontFamily: 'monospace', fontSize: '14px' }}>{widgetColor}</span>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', marginBottom: '6px', color: '#475569' }}>Special Offer / Promotion Text:</label>
               <input 
                 type="text" 
-                placeholder="e.g. 10% Off First Service Call or Free Estimates!" 
                 value={specialOffer} 
                 onChange={(e) => setSpecialOffer(e.target.value)}
-                style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '14px', boxSizing: 'border-box' }}
-              />
-              <p style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>This text appears instantly at the top of your review widget and hosted page.</p>
-            </div>
-
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', fontSize: '14px', fontWeight: 'bold', color: '#334155', marginBottom: '6px' }}>Accent Button Color</label>
-              <input 
-                type="color" 
-                value={widgetColor} 
-                onChange={(e) => setWidgetColor(e.target.value)}
-                style={{ width: '60px', height: '40px', border: 'none', cursor: 'pointer', borderRadius: '4px' }}
+                placeholder="e.g. 10% Off Your First Service Call!"
+                style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }}
               />
             </div>
 
-            <div>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold', color: '#0f172a' }}>
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', cursor: 'pointer', color: '#334155' }}>
                 <input 
                   type="checkbox" 
                   checked={showPhotoAddon} 
-                  onChange={(e) => setShowPhotoAddon(e.target.checked)} 
+                  onChange={(e) => setShowPhotoAddon(e.target.checked)}
                 />
-                Google Verified Profile Header Badge
+                Show Verified Google Header Badge
               </label>
             </div>
           </div>
 
           <div>
-            <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase', marginBottom: '8px', textAlign: 'center' }}>Live Output Preview</div>
+            <h4 style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#64748b', textTransform: 'uppercase' }}>Live Preview:</h4>
             <LocalPulseWidget 
               businessName={activeName} 
-              primaryColor={widgetColor} 
-              showPhotoAddon={showPhotoAddon} 
+              primaryColor={widgetColor}
               specialOffer={specialOffer}
+              showPhotoAddon={showPhotoAddon}
               reviews={liveReviews}
             />
           </div>
@@ -493,74 +503,21 @@ function CustomerDashboard({ businessName, email, onLogout }) {
       )}
 
       {activeTab === 'billing' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          
-          <div style={{ backgroundColor: '#f0fdf4', border: '2px solid #22c55e', padding: '24px', borderRadius: '12px' }}>
-            <span style={{ backgroundColor: '#dcfce7', color: '#15803d', fontSize: '12px', fontWeight: 'bold', padding: '4px 8px', borderRadius: '4px' }}>PRO ADDONS INCLUDED IN TRIAL</span>
-            <h3 style={{ margin: '8px 0 4px 0', fontSize: '20px', color: '#166534' }}>Google Verified Badge & Writable Promo Banner</h3>
-            <p style={{ margin: 0, color: '#15803d', fontSize: '14px' }}>Increase quote requests by showcasing verified Google Maps badges and custom promo offers directly to local homeowners.</p>
-          </div>
-
-          <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-            <h3 style={{ margin: '0 0 16px 0', fontSize: '20px', color: '#0f172a' }}>Subscription Plans</h3>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px' }}>
-              
-              <div style={{ border: '1px solid #cbd5e1', borderRadius: '10px', padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                <div>
-                  <h4 style={{ margin: '0 0 8px 0', fontSize: '18px', color: '#0f172a' }}>Monthly Standard</h4>
-                  <div style={{ fontSize: '28px', fontWeight: '800', color: '#0f172a', marginBottom: '12px' }}>$49 <span style={{ fontSize: '14px', fontWeight: 'normal', color: '#64748b' }}>/mo</span></div>
-                  <ul style={{ paddingLeft: '18px', margin: 0, fontSize: '13px', color: '#475569', lineHeight: '1.8' }}>
-                    <li>Review & SMS Quote Widget</li>
-                    <li>Website Script Embed</li>
-                    <li>Dedicated AI Lead Page Link</li>
-                    <li>Instant Email Lead Alerts</li>
-                    <li><strong>Google Badge Add-on:</strong> +$5/mo</li>
-                  </ul>
-                </div>
-                <a href="https://buy.stripe.com/test_monthly" style={{ display: 'block', textAlign: 'center', backgroundColor: '#0f172a', color: '#fff', textDecoration: 'none', padding: '10px', borderRadius: '6px', fontWeight: 'bold', fontSize: '14px', marginTop: '20px' }}>
-                  Subscribe Monthly ($49)
-                </a>
-              </div>
-
-              <div style={{ border: '2px solid #2563eb', borderRadius: '10px', padding: '20px', backgroundColor: '#eff6ff', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative' }}>
-                <span style={{ position: 'absolute', top: '-12px', right: '16px', backgroundColor: '#2563eb', color: '#fff', fontSize: '11px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '10px' }}>POPULAR</span>
-                <div>
-                  <h4 style={{ margin: '0 0 8px 0', fontSize: '18px', color: '#1e40af' }}>3-Month Pass</h4>
-                  <div style={{ fontSize: '28px', fontWeight: '800', color: '#1e40af', marginBottom: '12px' }}>$119 <span style={{ fontSize: '14px', fontWeight: 'normal', color: '#3b82f6' }}>one-time</span></div>
-                  <ul style={{ paddingLeft: '18px', margin: 0, fontSize: '13px', color: '#1e3a8a', lineHeight: '1.8' }}>
-                    <li>Everything in Monthly</li>
-                    <li>90 Days Full Access</li>
-                    <li><strong>FREE</strong> Dedicated Lead Page</li>
-                    <li>Writable Promo Banner</li>
-                    <li><strong>Google Badge Add-on:</strong> +$10/3-mo</li>
-                  </ul>
-                </div>
-                <a href="https://buy.stripe.com/test_3month" style={{ display: 'block', textAlign: 'center', backgroundColor: '#2563eb', color: '#fff', textDecoration: 'none', padding: '10px', borderRadius: '6px', fontWeight: 'bold', fontSize: '14px', marginTop: '20px' }}>
-                  Get 3-Month Pass ($119)
-                </a>
-              </div>
-
-              <div style={{ border: '1px solid #86efac', borderRadius: '10px', padding: '20px', backgroundColor: '#f0fdf4', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                <div>
-                  <span style={{ backgroundColor: '#dcfce7', color: '#15803d', fontSize: '11px', fontWeight: 'bold', padding: '2px 6px', borderRadius: '4px' }}>BEST VALUE</span>
-                  <h4 style={{ margin: '8px 0 8px 0', fontSize: '18px', color: '#166534' }}>Annual VIP Pass</h4>
-                  <div style={{ fontSize: '28px', fontWeight: '800', color: '#166534', marginBottom: '12px' }}>$297 <span style={{ fontSize: '14px', fontWeight: 'normal', color: '#16a34a' }}>/year</span></div>
-                  <ul style={{ paddingLeft: '18px', margin: 0, fontSize: '13px', color: '#14532d', lineHeight: '1.8' }}>
-                    <li>Everything in 3-Month Pass</li>
-                    <li>Equivalent to $24.75/month</li>
-                    <li><strong>Google Badge Add-on:</strong> Only $15/year</li>
-                    <li>VIP Setup Assistance</li>
-                  </ul>
-                </div>
-                <a href="https://buy.stripe.com/test_annual" style={{ display: 'block', textAlign: 'center', backgroundColor: '#166534', color: '#fff', textDecoration: 'none', padding: '10px', borderRadius: '6px', fontWeight: 'bold', fontSize: '14px', marginTop: '20px' }}>
-                  Get Annual VIP ($297)
-                </a>
-              </div>
-
+        <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+          <h3 style={{ margin: '0 0 16px 0', fontSize: '18px', color: '#0f172a' }}>Subscription & Billing</h3>
+          <p style={{ color: '#64748b', fontSize: '14px' }}>Your account is currently on the <strong>14-Day Free Trial</strong> plan.</p>
+          <div style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', padding: '20px', borderRadius: '8px', marginTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <h4 style={{ margin: '0 0 4px 0', color: '#0f172a' }}>LocalPulse Pro Plan</h4>
+              <p style={{ margin: 0, fontSize: '13px', color: '#64748b' }}>Unlimited widget views, live review scraping, and instant SMS lead capture.</p>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#0f172a' }}>$49<span style={{ fontSize: '12px', color: '#64748b' }}>/mo</span></div>
+              <button style={{ marginTop: '8px', backgroundColor: '#2563eb', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}>
+                Upgrade Now
+              </button>
             </div>
           </div>
-
         </div>
       )}
 
@@ -569,218 +526,76 @@ function CustomerDashboard({ businessName, email, onLogout }) {
 }
 
 // ==========================================
-// 3. PUBLIC MARKETING SALES LANDING PAGE & OPTION B STANDALONE PAGE
+// 3. MAIN PAGE ROUTE CONTROLLER & LOGIN STATE
 // ==========================================
-export default function LocalPulseSaaS() {
-  const [businessName, setBusinessName] = useState('');
-  const [email, setEmail] = useState('');
-  const [activeUser, setActiveUser] = useState(null);
-  const [isStandalonePage, setIsStandalonePage] = useState(false);
-  const [standaloneReviews, setStandaloneReviews] = useState([]);
+export default function Page() {
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [businessName, setBusinessName] = useState('Joe\'s Auto Repair');
+  const [email, setEmail] = useState('owner@joesauto.com');
+  const [isHostedMode, setIsHostedMode] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const bName = params.get('business');
-    const uEmail = params.get('email');
-    const mode = params.get('mode');
+    const bizParam = params.get('business');
+    const emailParam = params.get('email');
+    const modeParam = params.get('mode');
 
-    if (mode === 'page' && bName) {
-      setIsStandalonePage(true);
-      setBusinessName(bName);
-
-      fetch('/api/google-reviews', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ businessName: bName })
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.reviews && data.reviews.length > 0) {
-            setStandaloneReviews(data.reviews);
-          }
-        })
-        .catch((err) => console.error("Standalone review fetch error:", err));
-
-      return;
-    }
-
-    if (bName && uEmail) {
-      setActiveUser({ businessName: bName, email: uEmail });
-    }
+    if (bizParam) setBusinessName(bizParam);
+    if (emailParam) setEmail(emailParam);
+    if (modeParam === 'page') setIsHostedMode(true);
   }, []);
 
-  if (isStandalonePage) {
+  // If viewed via hosted landing page link (e.g. ?mode=page)
+  if (isHostedMode) {
     return (
-      <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc', padding: '40px 20px', fontFamily: 'sans-serif' }}>
-        <div style={{ maxWidth: '420px', margin: '0 auto 16px auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <button 
-            onClick={() => window.history.back()} 
-            style={{ backgroundColor: 'transparent', border: 'none', color: '#2563eb', fontWeight: 'bold', fontSize: '13px', cursor: 'pointer', padding: 0 }}
-          >
-            ← Back to Control Panel
-          </button>
-          <span style={{ fontSize: '12px', color: '#64748b' }}>Powered by LocalPulse AI</span>
+      <div style={{ backgroundColor: '#f8fafc', minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '20px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+          <h1 style={{ fontSize: '18px', color: '#0f172a', margin: 0 }}>Official Customer Portal & Quote Request</h1>
+          <p style={{ fontSize: '13px', color: '#64748b', margin: '4px 0 0 0' }}>Powered by LocalPulse AI</p>
         </div>
-        <LocalPulseWidget 
-          businessName={businessName} 
-          showPhotoAddon={true} 
-          specialOffer="Call Today for Instant Free Estimates!" 
-          reviews={standaloneReviews}
-        />
+        <LocalPulseWidget businessName={businessName} />
       </div>
     );
   }
 
-  if (activeUser) return <CustomerDashboard businessName={activeUser.businessName} email={activeUser.email} onLogout={() => setActiveUser(null)} />;
-
-  const handleSignup = async (e) => {
-    e.preventDefault();
-    await fetch('/api/onboard-customer', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ businessName, email })
-    });
-    setActiveUser({ businessName, email });
-  };
+  if (!isLoggedIn) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundColor: '#0f172a', fontFamily: 'sans-serif' }}>
+        <div style={{ background: '#ffffff', padding: '30px', borderRadius: '12px', width: '100%', maxWidth: '380px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}>
+          <h2 style={{ margin: '0 0 6px 0', fontSize: '22px', color: '#0f172a' }}>LocalPulse AI</h2>
+          <p style={{ color: '#64748b', fontSize: '13px', margin: '0 0 20px 0' }}>Sign in to your business dashboard</p>
+          
+          <form onSubmit={(e) => { e.preventDefault(); setIsLoggedIn(true); }} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <input 
+              type="text" 
+              placeholder="Business Name" 
+              value={businessName}
+              onChange={(e) => setBusinessName(e.target.value)}
+              style={{ padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '14px' }}
+            />
+            <input 
+              type="email" 
+              placeholder="Owner Email" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              style={{ padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '14px' }}
+            />
+            <button type="submit" style={{ backgroundColor: '#2563eb', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px', marginTop: '4px' }}>
+              Access Dashboard
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#0f172a', color: '#f8fafc', fontFamily: 'sans-serif', padding: '40px 20px' }}>
-      
-      {/* Top Navbar */}
-      <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
-        <div style={{ fontSize: '22px', fontWeight: '800', color: '#60a5fa' }}>LocalPulse AI</div>
-        <a href="#signup" style={{ backgroundColor: '#2563eb', color: '#fff', padding: '10px 20px', borderRadius: '8px', textDecoration: 'none', fontWeight: 'bold', fontSize: '14px' }}>Start 14-Day Free Trial</a>
-      </div>
-
-      <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
-        
-        {/* Hero Section */}
-        <div style={{ textAlign: 'center', marginBottom: '60px' }}>
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '20px', background: 'linear-gradient(to right, #60a5fa, #a855f7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', lineHeight: '1.2' }}>
-            Turn Local Website Traffic Into High-Paying Clients
-          </h1>
-          <p style={{ fontSize: '19px', color: '#94a3b8', maxWidth: '750px', margin: '0 auto 40px auto', lineHeight: '1.6' }}>
-            Display verified 5-star Google reviews and an instant SMS quote request form on your existing website or dedicated AI lead page.
-          </p>
-
-          <div id="signup" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', alignItems: 'center', textAlign: 'left', backgroundColor: '#1e293b', padding: '40px', borderRadius: '16px', border: '1px solid #334155', boxShadow: '0 12px 32px rgba(0,0,0,0.3)' }}>
-            <div>
-              <h3 style={{ fontSize: '26px', margin: '0 0 8px 0', color: '#ffffff' }}>Activate Free Trial</h3>
-              <p style={{ color: '#94a3b8', fontSize: '15px', marginBottom: '24px' }}>No credit card required. Up and running in under 60 seconds.</p>
-              
-              <form onSubmit={handleSignup} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <div>
-                  <label style={{ fontSize: '14px', color: '#94a3b8', display: 'block', marginBottom: '6px' }}>Business Name</label>
-                  <input 
-                    type="text" 
-                    required 
-                    placeholder="e.g. Austin Mobile Auto Detail" 
-                    value={businessName}
-                    onChange={(e) => setBusinessName(e.target.value)}
-                    style={{ width: '100%', padding: '14px', borderRadius: '8px', border: '1px solid #475569', backgroundColor: '#0f172a', color: '#fff', fontSize: '16px', boxSizing: 'border-box' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ fontSize: '14px', color: '#94a3b8', display: 'block', marginBottom: '6px' }}>Work Email Address</label>
-                  <input 
-                    type="email" 
-                    required 
-                    placeholder="owner@yourbusiness.com" 
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    style={{ width: '100%', padding: '14px', borderRadius: '8px', border: '1px solid #475569', backgroundColor: '#0f172a', color: '#fff', fontSize: '16px', boxSizing: 'border-box' }}
-                  />
-                </div>
-                <button type="submit" style={{ width: '100%', padding: '16px', backgroundColor: '#2563eb', color: '#fff', fontWeight: 'bold', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '16px' }}>
-                  Launch My Control Panel →
-                </button>
-              </form>
-            </div>
-
-            <div>
-              <div style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', color: '#64748b', fontWeight: 'bold', marginBottom: '12px', textAlign: 'center' }}>Live Output Preview</div>
-              <LocalPulseWidget 
-                businessName={businessName || "Your Business Name"} 
-                showPhotoAddon={true} 
-                specialOffer="10% Off First Service Call!" 
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* 3 Core Benefits Breakdown */}
-        <div style={{ margin: '80px 0', textAlign: 'center' }}>
-          <h2 style={{ fontSize: '32px', color: '#ffffff', marginBottom: '40px' }}>Why Local Trade Businesses Choose LocalPulse AI</h2>
-          
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '30px', textAlign: 'left' }}>
-            <div style={{ backgroundColor: '#1e293b', padding: '28px', borderRadius: '12px', border: '1px solid #334155' }}>
-              <div style={{ fontSize: '32px', marginBottom: '12px' }}>⭐</div>
-              <h3 style={{ fontSize: '20px', color: '#60a5fa', margin: '0 0 10px 0' }}>Verified Google Social Proof</h3>
-              <p style={{ color: '#94a3b8', fontSize: '14px', lineHeight: '1.6', margin: 0 }}>Homeowners buy from contractors they trust. Display your live 5-star Google reviews and verified location badges to convert visitors instantly.</p>
-            </div>
-
-            <div style={{ backgroundColor: '#1e293b', padding: '28px', borderRadius: '12px', border: '1px solid #334155' }}>
-              <div style={{ fontSize: '32px', marginBottom: '12px' }}>⚡</div>
-              <h3 style={{ fontSize: '20px', color: '#60a5fa', margin: '0 0 10px 0' }}>Instant SMS Lead Routing</h3>
-              <p style={{ color: '#94a3b8', fontSize: '14px', lineHeight: '1.6', margin: 0 }}>Never let a lead go cold. When a visitor requests a quote, details are sent directly to your phone so you can respond within minutes on job sites.</p>
-            </div>
-
-            <div style={{ backgroundColor: '#1e293b', padding: '28px', borderRadius: '12px', border: '1px solid #334155' }}>
-              <div style={{ fontSize: '32px', marginBottom: '12px' }}>🚀</div>
-              <h3 style={{ fontSize: '20px', color: '#60a5fa', margin: '0 0 10px 0' }}>Zero-Code Standalone Page</h3>
-              <p style={{ color: '#94a3b8', fontSize: '14px', lineHeight: '1.6', margin: 0 }}>Don't have a website? No problem. Get a dedicated, hosted lead generation link you can share directly on Facebook, Google Maps, or in text messages.</p>
-            </div>
-          </div>
-        </div>
-
-        {/* How It Works Section */}
-        <div style={{ backgroundColor: '#1e293b', padding: '40px', borderRadius: '16px', border: '1px solid #334155', margin: '80px 0', textAlign: 'center' }}>
-          <h2 style={{ fontSize: '32px', color: '#ffffff', marginBottom: '30px' }}>Up and Running in 3 Simple Steps</h2>
-          
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px', textAlign: 'left' }}>
-            <div style={{ backgroundColor: '#0f172a', padding: '20px', borderRadius: '10px' }}>
-              <div style={{ color: '#2563eb', fontWeight: 'bold', fontSize: '14px' }}>STEP 1</div>
-              <h4 style={{ color: '#fff', fontSize: '18px', margin: '6px 0' }}>Enter Business Name & City</h4>
-              <p style={{ color: '#94a3b8', fontSize: '13px', margin: 0 }}>Type your business name and city to instantly sync your 5-star reviews.</p>
-            </div>
-            
-            <div style={{ backgroundColor: '#0f172a', padding: '20px', borderRadius: '10px' }}>
-              <div style={{ color: '#2563eb', fontWeight: 'bold', fontSize: '14px' }}>STEP 2</div>
-              <h4 style={{ color: '#fff', fontSize: '18px', margin: '6px 0' }}>Select Deployment</h4>
-              <p style={{ color: '#94a3b8', fontSize: '13px', margin: 0 }}>Copy the 1-line script for your website or use your dedicated standalone AI lead page.</p>
-            </div>
-
-            <div style={{ backgroundColor: '#0f172a', padding: '20px', borderRadius: '10px' }}>
-              <div style={{ color: '#2563eb', fontWeight: 'bold', fontSize: '14px' }}>STEP 3</div>
-              <h4 style={{ color: '#fff', fontSize: '18px', margin: '6px 0' }}>Receive Quote Leads</h4>
-              <p style={{ color: '#94a3b8', fontSize: '13px', margin: 0 }}>Watch quote requests arrive on your phone via instant text and email alerts.</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Frequently Asked Questions */}
-        <div style={{ margin: '80px 0', maxWidth: '800px', margin: '0 auto 80px auto' }}>
-          <h2 style={{ fontSize: '32px', color: '#ffffff', marginBottom: '30px', textAlign: 'center' }}>Frequently Asked Questions</h2>
-          
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div style={{ backgroundColor: '#1e293b', padding: '20px', borderRadius: '10px', border: '1px solid #334155' }}>
-              <h4 style={{ margin: '0 0 6px 0', color: '#60a5fa', fontSize: '16px' }}>Do I need web development skills to install this?</h4>
-              <p style={{ margin: 0, color: '#94a3b8', fontSize: '14px' }}>Not at all. You can copy a single line of script to your site, click 'Email Dev' to let us send it to your web person, or simply use your dedicated hosted lead page link without touching code.</p>
-            </div>
-
-            <div style={{ backgroundColor: '#1e293b', padding: '20px', borderRadius: '10px', border: '1px solid #334155' }}>
-              <h4 style={{ margin: '0 0 6px 0', color: '#60a5fa', fontSize: '16px' }}>What happens after my 14-day free trial ends?</h4>
-              <p style={{ margin: 0, color: '#94a3b8', fontSize: '14px' }}>You can select from our flexible Monthly ($49/mo), 3-Month ($119), or Annual VIP ($297/yr) pass plans directly inside your billing portal. No lock-in contracts.</p>
-            </div>
-
-            <div style={{ backgroundColor: '#1e293b', padding: '20px', borderRadius: '10px', border: '1px solid #334155' }}>
-              <h4 style={{ margin: '0 0 6px 0', color: '#60a5fa', fontSize: '16px' }}>Can I customize the special promo banner?</h4>
-              <p style={{ margin: 0, color: '#94a3b8', fontSize: '14px' }}>Yes! Inside your portal, you can write custom announcements like "10% Off First Service Call" or "Free Emergency Estimates" whenever you want to run a campaign.</p>
-            </div>
-          </div>
-        </div>
-
-      </div>
+    <div style={{ backgroundColor: '#f8fafc', minHeight: '100vh' }}>
+      <CustomerDashboard 
+        businessName={businessName} 
+        email={email} 
+        onLogout={() => setIsLoggedIn(false)} 
+      />
     </div>
   );
 }
