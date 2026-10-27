@@ -24,7 +24,6 @@ export function LocalPulseWidget({
     { author: "Elena T.", rating: 5, text: "Extremely thorough, honest work, and transparent communication." }
   ];
 
-  // Filter out any 1, 2, or 3-star negative reviews automatically
   const positiveReviews = (reviews && reviews.length > 0)
     ? reviews.filter(r => (r.rating || 5) >= 4)
     : defaultReviews;
@@ -39,7 +38,6 @@ export function LocalPulseWidget({
 
   const displayedReviews = expandedReviews ? activeReviews : activeReviews.slice(0, 2);
 
-  // Helper to render accurate star ratings dynamically
   const renderStars = (rating) => {
     const numStars = Math.min(5, Math.max(1, Math.round(rating || 5)));
     return '★'.repeat(numStars) + '☆'.repeat(5 - numStars);
@@ -74,7 +72,6 @@ export function LocalPulseWidget({
   return (
     <div style={{ fontFamily: 'sans-serif', border: '1px solid #e2e8f0', borderRadius: '14px', maxWidth: '420px', margin: '0 auto', boxShadow: '0 8px 24px rgba(0,0,0,0.08)', backgroundColor: '#ffffff', overflow: 'hidden' }}>
       
-      {/* Verified Google Header */}
       {showPhotoAddon && (
         <div style={{ backgroundColor: '#0f172a', padding: '16px', color: '#fff', textAlign: 'center', borderBottom: '3px solid #22c55e' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '6px' }}>
@@ -99,20 +96,17 @@ export function LocalPulseWidget({
           </div>
         )}
 
-        {/* Custom Writable Promo Block */}
         {specialOffer && (
           <div style={{ backgroundColor: '#eff6ff', border: '1px dashed #2563eb', borderRadius: '8px', padding: '12px', marginBottom: '16px', color: '#1e40af', fontSize: '13px', textAlign: 'center', fontWeight: '600' }}>
             🎁 <strong>Special Promotion:</strong> {specialOffer}
           </div>
         )}
 
-        {/* Dynamic Reviews Container */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '12px' }}>
           {displayedReviews.map((r, i) => (
             <div key={i} style={{ backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px', fontSize: '13px', border: '1px solid #f1f5f9' }}>
               <div style={{ fontWeight: '600', color: '#334155', display: 'flex', justifyContent: 'space-between' }}>
                 <span>{r.author}</span>
-                {/* Dynamically Render True Rating Stars */}
                 <span style={{ color: '#eab308', letterSpacing: '1px' }}>{renderStars(r.rating)}</span>
               </div>
               <p style={{ margin: '4px 0 0 0', color: '#64748b' }}>"{r.text}"</p>
@@ -120,7 +114,6 @@ export function LocalPulseWidget({
           ))}
         </div>
 
-        {/* See More Reviews Button */}
         {activeReviews.length > 2 && (
           <button 
             onClick={() => setExpandedReviews(!expandedReviews)} 
@@ -130,7 +123,6 @@ export function LocalPulseWidget({
           </button>
         )}
 
-        {/* Generic Lead Capture Block */}
         <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '14px' }}>
           <p style={{ margin: '0 0 8px 0', fontSize: '14px', fontWeight: '600', color: '#0f172a' }}>{ctaText || 'Send Us a Direct Message:'}</p>
           {submitted ? (
@@ -184,7 +176,6 @@ function CustomerDashboard({ businessName, email, onLogout }) {
   const [activeTab, setActiveTab] = useState('overview');
   const [timeframe, setTimeframe] = useState('month');
 
-  // Dynamic Metrics State
   const [views, setViews] = useState(() => Number(localStorage.getItem('lp_views') || 148));
   const [leadsCount, setLeadsCount] = useState(() => Number(localStorage.getItem('lp_leads_count') || 12));
 
@@ -193,7 +184,7 @@ function CustomerDashboard({ businessName, email, onLogout }) {
     return saved ? JSON.parse(saved) : [];
   });
 
-  const [leads, setLeads] = useState([
+  const [leads] = useState([
     { id: 101, name: "Mark Thompson", phone: "(512) 555-0192", request: "Inquiry regarding schedule and availability", date: "Today at 2:14 PM", status: "New Inquiry" },
     { id: 102, name: "Jessica Alba", phone: "(512) 555-0148", request: "Can I get pricing details for upcoming enrollment?", date: "Yesterday at 4:30 PM", status: "Contacted" }
   ]);
@@ -218,16 +209,20 @@ function CustomerDashboard({ businessName, email, onLogout }) {
   };
 
   const handleSync = async () => {
-    if (!googleUrl) {
-      alert("Please enter your business name and city (e.g., 'Austin Gymnastics, Austin TX') or paste your Google Maps link!");
+    const searchQuery = googleUrl || activeName;
+    if (!searchQuery) {
+      alert("Please enter your business name and city (e.g., 'Tatarus Gymnastics, Knoxville TN') first!");
       return;
     }
     
     try {
+      localStorage.removeItem('lp_reviews');
+      setLiveReviews([]);
+
       const res = await fetch('/api/google-reviews', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ googleUrl, businessName: activeName })
+        body: JSON.stringify({ googleUrl: searchQuery, businessName: searchQuery })
       });
       
       const data = await res.json();
@@ -270,6 +265,19 @@ function CustomerDashboard({ businessName, email, onLogout }) {
     } catch (err) {
       alert("Please copy text manually.");
     }
+  };
+
+  const handleSendDevEmail = async (e) => {
+    e.preventDefault();
+    if (!devEmail) return;
+
+    await fetch('/api/onboard-customer', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ businessName: activeName, email: devEmail, isDeveloperEmail: true, embedCode })
+    });
+
+    setDevEmailSent(true);
   };
 
   const conversionRate = views > 0 ? ((leadsCount / views) * 100).toFixed(1) : "0.0";
@@ -347,11 +355,11 @@ function CustomerDashboard({ businessName, email, onLogout }) {
           <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
             <h3 style={{ margin: '0 0 8px 0', fontSize: '18px' }}>1. Connect Google Business Profile</h3>
             <p style={{ margin: '0 0 12px 0', fontSize: '14px', color: '#64748b' }}>
-              Type your <strong>Business Name, City, State</strong> (e.g. <em>Austin Gymnastics, Austin TX</em>) or paste your Google Maps link:
+              Type your <strong>Business Name, City, State</strong> (e.g. <em>Tatarus Gymnastics, Knoxville TN</em>) or paste your Google Maps link:
             </p>
             <input 
               type="text" 
-              placeholder="e.g. Austin Gymnastics, Austin TX" 
+              placeholder="e.g. Tatarus Gymnastics, Knoxville TN" 
               value={googleUrl}
               onChange={(e) => setGoogleUrl(e.target.value)}
               style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', boxSizing: 'border-box', marginBottom: '12px' }}
@@ -431,6 +439,40 @@ function CustomerDashboard({ businessName, email, onLogout }) {
         </div>
       )}
 
+      {activeTab === 'inbox' && (
+        <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+          <h3 style={{ margin: '0 0 16px 0', fontSize: '18px', color: '#0f172a' }}>Captured Lead Activity Inbox</h3>
+          <p style={{ color: '#64748b', fontSize: '14px', margin: '0 0 20px 0' }}>All inquiries entered through your widget or standalone page are listed below and dispatched immediately to your email/SMS:</p>
+
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '14px' }}>
+              <thead>
+                <tr style={{ backgroundColor: '#f8fafc', borderBottom: '2px solid #e2e8f0', color: '#475569' }}>
+                  <th style={{ padding: '12px' }}>Date</th>
+                  <th style={{ padding: '12px' }}>Customer Phone</th>
+                  <th style={{ padding: '12px' }}>Inquiry Details</th>
+                  <th style={{ padding: '12px' }}>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {leads.map((lead) => (
+                  <tr key={lead.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                    <td style={{ padding: '12px', color: '#64748b', fontSize: '13px' }}>{lead.date}</td>
+                    <td style={{ padding: '12px', fontWeight: 'bold', color: '#2563eb' }}>{lead.phone}</td>
+                    <td style={{ padding: '12px', color: '#334155' }}>{lead.request}</td>
+                    <td style={{ padding: '12px' }}>
+                      <span style={{ backgroundColor: '#dcfce7', color: '#15803d', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}>
+                        {lead.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
       {activeTab === 'customize' && (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
           
@@ -441,7 +483,7 @@ function CustomerDashboard({ businessName, email, onLogout }) {
               <label style={{ display: 'block', fontSize: '14px', fontWeight: 'bold', color: '#334155', marginBottom: '6px' }}>Call To Action Box Heading</label>
               <input 
                 type="text" 
-                placeholder="e.g. Send Us a Direct Message: or Request Information:" 
+                placeholder="e.g. Send Us a Direct Message:" 
                 value={ctaText} 
                 onChange={(e) => setCtaText(e.target.value)}
                 style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '14px', boxSizing: 'border-box' }}
@@ -486,7 +528,15 @@ function CustomerDashboard({ businessName, email, onLogout }) {
         </div>
       )}
 
-      {/* Rest of Tabs (Inbox & Billing) remain cleanly integrated */}
+      {activeTab === 'billing' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+            <h3 style={{ margin: '0 0 16px 0', fontSize: '20px', color: '#0f172a' }}>Subscription Plans</h3>
+            <p style={{ color: '#64748b', fontSize: '14px' }}>Select your subscription plan to keep your review widget and lead capture active.</p>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
@@ -558,9 +608,10 @@ export default function LocalPulseSaaS() {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#0f172a', color: '#f8fafc', fontFamily: 'sans-serif', padding: '40px 20px' }}>
-      <div style={{ maxWidth: '1100px', margin: '0 auto', textAlign: 'center' }}>
-        <h1 style={{ fontSize: '40px', fontWeight: '800' }}>LocalPulse AI</h1>
-        <button onClick={() => setActiveUser({ businessName: 'Demo Business', email: 'demo@business.com' })} style={{ padding: '14px 28px', backgroundColor: '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', marginTop: '20px' }}>
+      <div style={{ maxWidth: '1100px', margin: '0 auto', textAlign: 'center', paddingTop: '100px' }}>
+        <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '16px' }}>LocalPulse AI</h1>
+        <p style={{ fontSize: '18px', color: '#94a3b8', marginBottom: '30px' }}>Turn local website traffic into loyal clients with verified Google reviews.</p>
+        <button onClick={() => setActiveUser({ businessName: 'Tatarus Gymnastics', email: 'owner@tatarusgymnastics.com' })} style={{ padding: '14px 28px', backgroundColor: '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
           Launch Dashboard →
         </button>
       </div>
