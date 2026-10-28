@@ -175,6 +175,9 @@ function CustomerDashboard({ businessName, email, onLogout }) {
   const [showPhotoAddon, setShowPhotoAddon] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   const [timeframe, setTimeframe] = useState('month');
+  
+  // Free Beta / VIP Access Toggle State
+  const [isVipAccess, setIsVipAccess] = useState(() => localStorage.getItem('lp_vip_status') === 'true');
 
   const [views, setViews] = useState(() => Number(localStorage.getItem('lp_views') || 148));
   const [leadsCount, setLeadsCount] = useState(() => Number(localStorage.getItem('lp_leads_count') || 12));
@@ -199,7 +202,8 @@ function CustomerDashboard({ businessName, email, onLogout }) {
     localStorage.setItem('lp_cta', ctaText);
     localStorage.setItem('lp_views', views);
     localStorage.setItem('lp_leads_count', leadsCount);
-  }, [widgetColor, specialOffer, ctaText, views, leadsCount]);
+    localStorage.setItem('lp_vip_status', isVipAccess);
+  }, [widgetColor, specialOffer, ctaText, views, leadsCount, isVipAccess]);
 
   const handleResetMetrics = () => {
     if (confirm("Are you sure you want to reset your impression and lead analytics counters to zero?")) {
@@ -267,19 +271,6 @@ function CustomerDashboard({ businessName, email, onLogout }) {
     }
   };
 
-  const handleSendDevEmail = async (e) => {
-    e.preventDefault();
-    if (!devEmail) return;
-
-    await fetch('/api/onboard-customer', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ businessName: activeName, email: devEmail, isDeveloperEmail: true, embedCode })
-    });
-
-    setDevEmailSent(true);
-  };
-
   const conversionRate = views > 0 ? ((leadsCount / views) * 100).toFixed(1) : "0.0";
 
   return (
@@ -289,12 +280,17 @@ function CustomerDashboard({ businessName, email, onLogout }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e2e8f0', paddingBottom: '20px', marginBottom: '24px' }}>
         <div>
           <h1 style={{ margin: 0, fontSize: '26px', color: '#0f172a' }}>{activeName} Portal</h1>
-          <p style={{ margin: '4px 0 0 0', color: '#64748b', fontSize: '14px' }}>Account Owner: <strong>{email || 'Demo Mode'}</strong> | <span style={{ color: '#16a34a', fontWeight: 'bold' }}>14-Day Free Trial Active</span></p>
+          <p style={{ margin: '4px 0 0 0', color: '#64748b', fontSize: '14px' }}>
+            Account Owner: <strong>{email || 'Demo Mode'}</strong> | 
+            <span style={{ color: isVipAccess ? '#2563eb' : '#16a34a', fontWeight: 'bold', marginLeft: '6px' }}>
+              {isVipAccess ? '⭐ VIP Partner (Unlimited Access)' : '14-Day Free Trial Active'}
+            </span>
+          </p>
         </div>
         <button onClick={onLogout} style={{ padding: '8px 16px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#fff', cursor: 'pointer', fontSize: '13px' }}>Log Out</button>
       </div>
 
-      {/* Metrics Header Bar with Timeframe & Reset Controls */}
+      {/* Performance Analytics Bar */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
         <h3 style={{ margin: 0, fontSize: '16px', color: '#0f172a' }}>Performance Analytics Overview</h3>
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
@@ -317,7 +313,6 @@ function CustomerDashboard({ businessName, email, onLogout }) {
         </div>
       </div>
 
-      {/* Dynamic Metrics Summary Bar */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', marginBottom: '24px' }}>
         <div style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', padding: '16px', borderRadius: '10px', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
           <div style={{ fontSize: '12px', color: '#64748b', textTransform: 'uppercase', fontWeight: 'bold' }}>Widget Impressions</div>
@@ -475,7 +470,6 @@ function CustomerDashboard({ businessName, email, onLogout }) {
 
       {activeTab === 'customize' && (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
-          
           <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
             <h3 style={{ margin: '0 0 16px 0', fontSize: '18px' }}>Writable Announcement & Headline Controls</h3>
             
@@ -488,7 +482,6 @@ function CustomerDashboard({ businessName, email, onLogout }) {
                 onChange={(e) => setCtaText(e.target.value)}
                 style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '14px', boxSizing: 'border-box' }}
               />
-              <p style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>Customize the text displayed above the inquiry input box.</p>
             </div>
 
             <div style={{ marginBottom: '20px' }}>
@@ -524,16 +517,84 @@ function CustomerDashboard({ businessName, email, onLogout }) {
               reviews={liveReviews}
             />
           </div>
-
         </div>
       )}
 
+      {/* Restored Tab 4: Subscription Plans & Admin Access Control */}
       {activeTab === 'billing' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-            <h3 style={{ margin: '0 0 16px 0', fontSize: '20px', color: '#0f172a' }}>Subscription Plans</h3>
-            <p style={{ color: '#64748b', fontSize: '14px' }}>Select your subscription plan to keep your review widget and lead capture active.</p>
+          
+          {/* Admin Override Banner */}
+          <div style={{ backgroundColor: '#f0fdf4', border: '2px solid #22c55e', padding: '20px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <h3 style={{ margin: '0 0 4px 0', fontSize: '18px', color: '#166534' }}>Admin Access Control</h3>
+              <p style={{ margin: 0, color: '#15803d', fontSize: '13px' }}>Grant test businesses free, unlimited access without trial expiration.</p>
+            </div>
+            <button 
+              onClick={() => setIsVipAccess(!isVipAccess)}
+              style={{ backgroundColor: isVipAccess ? '#166534' : '#2563eb', color: '#fff', border: 'none', padding: '10px 16px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}
+            >
+              {isVipAccess ? '✓ VIP Unlimited Access Active' : 'Enable Free VIP Access'}
+            </button>
           </div>
+
+          <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+            <h3 style={{ margin: '0 0 16px 0', fontSize: '20px', color: '#0f172a' }}>Subscription Tiers</h3>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px' }}>
+              
+              <div style={{ border: '1px solid #cbd5e1', borderRadius: '10px', padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <div>
+                  <h4 style={{ margin: '0 0 8px 0', fontSize: '18px', color: '#0f172a' }}>Monthly Standard</h4>
+                  <div style={{ fontSize: '28px', fontWeight: '800', color: '#0f172a', marginBottom: '12px' }}>$49 <span style={{ fontSize: '14px', fontWeight: 'normal', color: '#64748b' }}>/mo</span></div>
+                  <ul style={{ paddingLeft: '18px', margin: 0, fontSize: '13px', color: '#475569', lineHeight: '1.8' }}>
+                    <li>Review & SMS Quote Widget</li>
+                    <li>Website Script Embed</li>
+                    <li>Dedicated AI Lead Page Link</li>
+                    <li>Instant Email Lead Alerts</li>
+                  </ul>
+                </div>
+                <a href="https://buy.stripe.com/test_monthly" style={{ display: 'block', textAlign: 'center', backgroundColor: '#0f172a', color: '#fff', textDecoration: 'none', padding: '10px', borderRadius: '6px', fontWeight: 'bold', fontSize: '14px', marginTop: '20px' }}>
+                  Subscribe Monthly ($49)
+                </a>
+              </div>
+
+              <div style={{ border: '2px solid #2563eb', borderRadius: '10px', padding: '20px', backgroundColor: '#eff6ff', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative' }}>
+                <span style={{ position: 'absolute', top: '-12px', right: '16px', backgroundColor: '#2563eb', color: '#fff', fontSize: '11px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '10px' }}>POPULAR</span>
+                <div>
+                  <h4 style={{ margin: '0 0 8px 0', fontSize: '18px', color: '#1e40af' }}>3-Month Pass</h4>
+                  <div style={{ fontSize: '28px', fontWeight: '800', color: '#1e40af', marginBottom: '12px' }}>$119 <span style={{ fontSize: '14px', fontWeight: 'normal', color: '#3b82f6' }}>one-time</span></div>
+                  <ul style={{ paddingLeft: '18px', margin: 0, fontSize: '13px', color: '#1e3a8a', lineHeight: '1.8' }}>
+                    <li>Everything in Monthly</li>
+                    <li>90 Days Full Access</li>
+                    <li>FREE Dedicated Lead Page</li>
+                    <li>Writable Promo Banner</li>
+                  </ul>
+                </div>
+                <a href="https://buy.stripe.com/test_3month" style={{ display: 'block', textAlign: 'center', backgroundColor: '#2563eb', color: '#fff', textDecoration: 'none', padding: '10px', borderRadius: '6px', fontWeight: 'bold', fontSize: '14px', marginTop: '20px' }}>
+                  Get 3-Month Pass ($119)
+                </a>
+              </div>
+
+              <div style={{ border: '1px solid #86efac', borderRadius: '10px', padding: '20px', backgroundColor: '#f0fdf4', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <div>
+                  <span style={{ backgroundColor: '#dcfce7', color: '#15803d', fontSize: '11px', fontWeight: 'bold', padding: '2px 6px', borderRadius: '4px' }}>BEST VALUE</span>
+                  <h4 style={{ margin: '8px 0 8px 0', fontSize: '18px', color: '#166534' }}>Annual VIP Pass</h4>
+                  <div style={{ fontSize: '28px', fontWeight: '800', color: '#166534', marginBottom: '12px' }}>$297 <span style={{ fontSize: '14px', fontWeight: 'normal', color: '#16a34a' }}>/year</span></div>
+                  <ul style={{ paddingLeft: '18px', margin: 0, fontSize: '13px', color: '#14532d', lineHeight: '1.8' }}>
+                    <li>Everything in 3-Month Pass</li>
+                    <li>Equivalent to $24.75/month</li>
+                    <li>VIP Setup Assistance</li>
+                  </ul>
+                </div>
+                <a href="https://buy.stripe.com/test_annual" style={{ display: 'block', textAlign: 'center', backgroundColor: '#166534', color: '#fff', textDecoration: 'none', padding: '10px', borderRadius: '6px', fontWeight: 'bold', fontSize: '14px', marginTop: '20px' }}>
+                  Get Annual VIP ($297)
+                </a>
+              </div>
+
+            </div>
+          </div>
+
         </div>
       )}
 
@@ -561,7 +622,6 @@ export default function LocalPulseSaaS() {
       setIsStandalonePage(true);
       setBusinessName(bName);
 
-      // Fetch live reviews specifically for the requested business name in the URL
       fetch('/api/google-reviews', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -609,16 +669,12 @@ export default function LocalPulseSaaS() {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#0f172a', color: '#f8fafc', fontFamily: 'sans-serif', padding: '40px 20px' }}>
-      
-      {/* Top Navbar */}
       <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
         <div style={{ fontSize: '22px', fontWeight: '800', color: '#60a5fa' }}>LocalPulse AI</div>
         <a href="#signup" style={{ backgroundColor: '#2563eb', color: '#fff', padding: '10px 20px', borderRadius: '8px', textDecoration: 'none', fontWeight: 'bold', fontSize: '14px' }}>Start 14-Day Free Trial</a>
       </div>
 
       <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
-        
-        {/* Hero Section */}
         <div style={{ textAlign: 'center', marginBottom: '60px' }}>
           <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '20px', background: 'linear-gradient(to right, #60a5fa, #a855f7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', lineHeight: '1.2' }}>
             Turn Local Website Traffic Into High-Paying Clients
@@ -674,7 +730,6 @@ export default function LocalPulseSaaS() {
             </div>
           </div>
         </div>
-
       </div>
     </div>
   );
