@@ -176,8 +176,8 @@ function CustomerDashboard({ businessName, email, onLogout }) {
   const [activeTab, setActiveTab] = useState('overview');
   const [timeframe, setTimeframe] = useState('month');
   
-  // Free Beta / VIP Access Toggle State
-  const [isVipAccess, setIsVipAccess] = useState(() => localStorage.getItem('lp_vip_status') === 'true');
+  // Behind-the-scenes VIP Status
+  const [vipStatus, setVipStatus] = useState({ isVip: false, expiresAt: null });
 
   const [views, setViews] = useState(() => Number(localStorage.getItem('lp_views') || 148));
   const [leadsCount, setLeadsCount] = useState(() => Number(localStorage.getItem('lp_leads_count') || 12));
@@ -196,14 +196,27 @@ function CustomerDashboard({ businessName, email, onLogout }) {
   const embedCode = `<script src="https://localpulse-ai-sute.vercel.app/widget.js" data-business="${encodeURIComponent(activeName)}" data-color="${widgetColor}"></script>`;
   const hostedPageLink = `https://localpulse-ai-sute.vercel.app/?business=${encodeURIComponent(activeName)}&mode=page`;
 
+  // Check backend VIP status on load
+  useEffect(() => {
+    if (email) {
+      fetch('/api/check-vip', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      })
+        .then(res => res.json())
+        .then(data => setVipStatus(data))
+        .catch(err => console.error("VIP Check error:", err));
+    }
+  }, [email]);
+
   useEffect(() => {
     localStorage.setItem('lp_color', widgetColor);
     localStorage.setItem('lp_offer', specialOffer);
     localStorage.setItem('lp_cta', ctaText);
     localStorage.setItem('lp_views', views);
     localStorage.setItem('lp_leads_count', leadsCount);
-    localStorage.setItem('lp_vip_status', isVipAccess);
-  }, [widgetColor, specialOffer, ctaText, views, leadsCount, isVipAccess]);
+  }, [widgetColor, specialOffer, ctaText, views, leadsCount]);
 
   const handleResetMetrics = () => {
     if (confirm("Are you sure you want to reset your impression and lead analytics counters to zero?")) {
@@ -282,8 +295,8 @@ function CustomerDashboard({ businessName, email, onLogout }) {
           <h1 style={{ margin: 0, fontSize: '26px', color: '#0f172a' }}>{activeName} Portal</h1>
           <p style={{ margin: '4px 0 0 0', color: '#64748b', fontSize: '14px' }}>
             Account Owner: <strong>{email || 'Demo Mode'}</strong> | 
-            <span style={{ color: isVipAccess ? '#2563eb' : '#16a34a', fontWeight: 'bold', marginLeft: '6px' }}>
-              {isVipAccess ? '⭐ VIP Partner (Unlimited Access)' : '14-Day Free Trial Active'}
+            <span style={{ color: vipStatus.isVip ? '#2563eb' : '#16a34a', fontWeight: 'bold', marginLeft: '6px' }}>
+              {vipStatus.isVip ? `⭐ VIP Partner (${vipStatus.tier} - Expires ${vipStatus.expiresAt})` : '14-Day Free Trial Active'}
             </span>
           </p>
         </div>
@@ -520,26 +533,12 @@ function CustomerDashboard({ businessName, email, onLogout }) {
         </div>
       )}
 
-      {/* Restored Tab 4: Subscription Plans & Admin Access Control */}
+      {/* Tab 4: Subscription Plans (Cleaned of any client-side toggles) */}
       {activeTab === 'billing' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           
-          {/* Admin Override Banner */}
-          <div style={{ backgroundColor: '#f0fdf4', border: '2px solid #22c55e', padding: '20px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div>
-              <h3 style={{ margin: '0 0 4px 0', fontSize: '18px', color: '#166534' }}>Admin Access Control</h3>
-              <p style={{ margin: 0, color: '#15803d', fontSize: '13px' }}>Grant test businesses free, unlimited access without trial expiration.</p>
-            </div>
-            <button 
-              onClick={() => setIsVipAccess(!isVipAccess)}
-              style={{ backgroundColor: isVipAccess ? '#166534' : '#2563eb', color: '#fff', border: 'none', padding: '10px 16px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}
-            >
-              {isVipAccess ? '✓ VIP Unlimited Access Active' : 'Enable Free VIP Access'}
-            </button>
-          </div>
-
           <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-            <h3 style={{ margin: '0 0 16px 0', fontSize: '20px', color: '#0f172a' }}>Subscription Tiers</h3>
+            <h3 style={{ margin: '0 0 16px 0', fontSize: '20px', color: '#0f172a' }}>Subscription Plans</h3>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px' }}>
               
