@@ -80,10 +80,10 @@ export function LocalPulseWidget({
             ) : (
               <span style={{ backgroundColor: '#22c55e', color: '#fff', borderRadius: '50%', width: '24px', height: '24px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold' }}>✓</span>
             )}
-            <span style={{ fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#86efac' }}>Verified Profile</span>
+            <span style={{ fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#86efac' }}>Verified Google Profile</span>
           </div>
           <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 'bold', color: '#ffffff' }}>{businessName || 'Your Business Name'}</h3>
-          <div style={{ fontSize: '13px', color: '#94a3b8', marginTop: '4px' }}>★★★★★ Highly Rated on Google</div>
+          <div style={{ fontSize: '13px', color: '#94a3b8', marginTop: '4px' }}>★★★★★ Highly Rated on Google Maps</div>
         </div>
       )}
 
@@ -147,9 +147,13 @@ export function LocalPulseWidget({
                   style={{ flex: 1, padding: '10px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }}
                 />
                 <button type="submit" disabled={loading} style={{ backgroundColor: primaryColor, color: '#fff', border: 'none', borderRadius: '6px', padding: '10px 14px', fontSize: '13px', cursor: 'pointer', fontWeight: '600' }}>
-                  {loading ? '...' : 'Send Message'}
+                  {loading ? '...' : 'Send'}
                 </button>
               </div>
+              {/* TCPA Legal Disclosure for SMS compliance */}
+              <span style={{ fontSize: '10px', color: '#94a3b8', lineHeight: '1.2' }}>
+                By submitting your phone number, you agree to receive SMS alerts. Msg & data rates may apply.
+              </span>
             </form>
           )}
         </div>
@@ -176,7 +180,6 @@ function CustomerDashboard({ businessName, email, onLogout }) {
   const [activeTab, setActiveTab] = useState('overview');
   const [timeframe, setTimeframe] = useState('month');
   
-  // Behind-the-scenes VIP Status
   const [vipStatus, setVipStatus] = useState({ isVip: false, expiresAt: null });
 
   const [views, setViews] = useState(() => Number(localStorage.getItem('lp_views') || 148));
@@ -193,10 +196,10 @@ function CustomerDashboard({ businessName, email, onLogout }) {
   ]);
 
   const activeName = businessName || 'Your Business Name';
-  const embedCode = `<script src="https://localpulse-ai-sute.vercel.app/widget.js" data-business="${encodeURIComponent(activeName)}" data-color="${widgetColor}"></script>`;
+  // iframe embed snippet to prevent CSS style leaks
+  const embedCode = `<iframe src="https://localpulse-ai-sute.vercel.app/?business=${encodeURIComponent(activeName)}&mode=page" width="100%" height="600px" style="border:none; border-radius:14px;"></iframe>`;
   const hostedPageLink = `https://localpulse-ai-sute.vercel.app/?business=${encodeURIComponent(activeName)}&mode=page`;
 
-  // Check backend VIP status on load
   useEffect(() => {
     if (email) {
       fetch('/api/check-vip', {
@@ -401,18 +404,18 @@ function CustomerDashboard({ businessName, email, onLogout }) {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '16px' }}>
               
               <div style={{ border: '1px solid #e2e8f0', padding: '16px', borderRadius: '8px', backgroundColor: '#f8fafc' }}>
-                <h4 style={{ margin: '0 0 6px 0', color: '#0f172a' }}>Option A: Website Embed Script</h4>
-                <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 12px 0' }}>Paste in your HTML or send straight to your web developer:</p>
+                <h4 style={{ margin: '0 0 6px 0', color: '#0f172a' }}>Option A: Website Embed iframe Code</h4>
+                <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 12px 0' }}>Paste this iframe snippet into your website (immune to style conflicts):</p>
                 
                 <textarea 
                   readOnly
                   value={embedCode}
                   onClick={(e) => e.target.select()}
-                  style={{ width: '100%', height: '60px', backgroundColor: '#ffffff', padding: '8px', borderRadius: '6px', fontSize: '12px', border: '1px solid #cbd5e1', fontFamily: 'monospace', resize: 'none', boxSizing: 'border-box' }}
+                  style={{ width: '100%', height: '60px', backgroundColor: '#ffffff', padding: '8px', borderRadius: '6px', fontSize: '11px', border: '1px solid #cbd5e1', fontFamily: 'monospace', resize: 'none', boxSizing: 'border-box' }}
                 />
                 
                 <button onClick={() => copyToClipboard(embedCode, 'code')} style={{ backgroundColor: '#2563eb', color: '#fff', padding: '8px 14px', borderRadius: '6px', border: 'none', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px', width: '100%', marginTop: '8px' }}>
-                  {copiedCode ? '✓ Code Copied!' : 'Copy Code Snippet'}
+                  {copiedCode ? '✓ iframe Code Copied!' : 'Copy iframe Snippet'}
                 </button>
               </div>
 
@@ -533,10 +536,8 @@ function CustomerDashboard({ businessName, email, onLogout }) {
         </div>
       )}
 
-      {/* Tab 4: Subscription Plans (Cleaned of any client-side toggles) */}
       {activeTab === 'billing' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          
           <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
             <h3 style={{ margin: '0 0 16px 0', fontSize: '20px', color: '#0f172a' }}>Subscription Plans</h3>
 
@@ -548,7 +549,7 @@ function CustomerDashboard({ businessName, email, onLogout }) {
                   <div style={{ fontSize: '28px', fontWeight: '800', color: '#0f172a', marginBottom: '12px' }}>$49 <span style={{ fontSize: '14px', fontWeight: 'normal', color: '#64748b' }}>/mo</span></div>
                   <ul style={{ paddingLeft: '18px', margin: 0, fontSize: '13px', color: '#475569', lineHeight: '1.8' }}>
                     <li>Review & SMS Quote Widget</li>
-                    <li>Website Script Embed</li>
+                    <li>Website iframe Embed</li>
                     <li>Dedicated AI Lead Page Link</li>
                     <li>Instant Email Lead Alerts</li>
                   </ul>
