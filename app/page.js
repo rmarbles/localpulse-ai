@@ -1,82 +1,6 @@
 'use client';
 
 export const dynamic = 'force-dynamic';
-Indent size
-
-Line wrap mode
-
-Editing page.js file contents
-  1
-  2
-  3
-  4
-  5
-  6
-  7
-  8
-  9
- 10
- 11
- 12
- 13
- 14
- 15
- 16
- 17
- 18
- 19
- 20
- 21
- 22
- 23
- 24
- 25
- 26
- 27
- 28
- 29
- 30
- 31
- 32
- 33
- 34
- 35
- 36
- 37
- 38
- 39
- 40
- 41
- 42
- 43
- 44
- 45
- 46
- 47
- 48
- 49
- 50
- 51
- 52
- 53
- 54
- 55
- 56
- 57
- 58
- 59
- 60
- 61
- 62
- 63
- 64
- 65
- 66
- 67
- 68
- 69
- 70
- 71
 
 import React, { useState, useEffect } from 'react';
 
@@ -507,4 +431,310 @@ function CustomerDashboard({ businessName, email, onLogout }) {
                   
                   <input 
                     type="text" 
-                    read
+                    readOnly 
+                    value={hostedPageLink}
+                    onClick={(e) => e.target.select()}
+                    style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #93c5fd', backgroundColor: '#fff', fontSize: '12px', boxSizing: 'border-box' }}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                  <button onClick={() => copyToClipboard(hostedPageLink, 'link')} style={{ flex: 1, backgroundColor: '#1d4ed8', color: '#fff', padding: '10px', borderRadius: '6px', border: 'none', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}>
+                    {copiedLink ? '✓ Link Copied!' : 'Copy Link'}
+                  </button>
+                  <a href={hostedPageLink} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', backgroundColor: '#0f172a', color: '#fff', padding: '10px 14px', borderRadius: '6px', textDecoration: 'none', fontWeight: 'bold', fontSize: '13px', textAlign: 'center' }}>
+                    Preview Page ↗
+                  </a>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      )}
+
+      {activeTab === 'inbox' && (
+        <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+          <h3 style={{ margin: '0 0 16px 0', fontSize: '18px', color: '#0f172a' }}>Captured Lead Activity Inbox</h3>
+          <p style={{ color: '#64748b', fontSize: '14px', margin: '0 0 20px 0' }}>All inquiries entered through your widget or standalone page are listed below and dispatched immediately to your email/SMS:</p>
+
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '14px' }}>
+              <thead>
+                <tr style={{ backgroundColor: '#f8fafc', borderBottom: '2px solid #e2e8f0', color: '#475569' }}>
+                  <th style={{ padding: '12px' }}>Date</th>
+                  <th style={{ padding: '12px' }}>Customer Phone</th>
+                  <th style={{ padding: '12px' }}>Inquiry Details</th>
+                  <th style={{ padding: '12px' }}>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {leads.map((lead) => (
+                  <tr key={lead.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                    <td style={{ padding: '12px', color: '#64748b', fontSize: '13px' }}>{lead.date}</td>
+                    <td style={{ padding: '12px', fontWeight: 'bold', color: '#2563eb' }}>{lead.phone}</td>
+                    <td style={{ padding: '12px', color: '#334155' }}>{lead.request}</td>
+                    <td style={{ padding: '12px' }}>
+                      <span style={{ backgroundColor: '#dcfce7', color: '#15803d', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}>
+                        {lead.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'customize' && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
+          <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+            <h3 style={{ margin: '0 0 16px 0', fontSize: '18px' }}>Writable Announcement & Headline Controls</h3>
+            
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: 'bold', color: '#334155', marginBottom: '6px' }}>Call To Action Box Heading</label>
+              <input 
+                type="text" 
+                placeholder="e.g. Send Us a Direct Message:" 
+                value={ctaText} 
+                onChange={(e) => setCtaText(e.target.value)}
+                style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '14px', boxSizing: 'border-box' }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: 'bold', color: '#334155', marginBottom: '6px' }}>Special Offer Announcement Banner</label>
+              <input 
+                type="text" 
+                placeholder="e.g. Free Trial Class or 10% Off First Month!" 
+                value={specialOffer} 
+                onChange={(e) => setSpecialOffer(e.target.value)}
+                style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '14px', boxSizing: 'border-box' }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: 'bold', color: '#334155', marginBottom: '6px' }}>Accent Button Color</label>
+              <input 
+                type="color" 
+                value={widgetColor} 
+                onChange={(e) => setWidgetColor(e.target.value)}
+                style={{ width: '60px', height: '40px', border: 'none', cursor: 'pointer', borderRadius: '4px' }}
+              />
+            </div>
+          </div>
+
+          <div>
+            <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase', marginBottom: '8px', textAlign: 'center' }}>Live Output Preview</div>
+            <LocalPulseWidget 
+              businessName={activeName} 
+              primaryColor={widgetColor} 
+              showPhotoAddon={showPhotoAddon} 
+              specialOffer={specialOffer}
+              ctaText={ctaText}
+              reviews={liveReviews}
+            />
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'billing' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+            <h3 style={{ margin: '0 0 16px 0', fontSize: '20px', color: '#0f172a' }}>Subscription Plans</h3>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px' }}>
+              
+              <div style={{ border: '1px solid #cbd5e1', borderRadius: '10px', padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <div>
+                  <h4 style={{ margin: '0 0 8px 0', fontSize: '18px', color: '#0f172a' }}>Monthly Standard</h4>
+                  <div style={{ fontSize: '28px', fontWeight: '800', color: '#0f172a', marginBottom: '12px' }}>$49 <span style={{ fontSize: '14px', fontWeight: 'normal', color: '#64748b' }}>/mo</span></div>
+                  <ul style={{ paddingLeft: '18px', margin: 0, fontSize: '13px', color: '#475569', lineHeight: '1.8' }}>
+                    <li>Review & SMS Quote Widget</li>
+                    <li>Website iframe Embed</li>
+                    <li>Dedicated AI Lead Page Link</li>
+                    <li>Instant Email Lead Alerts</li>
+                  </ul>
+                </div>
+                <a href="https://buy.stripe.com/test_monthly" style={{ display: 'block', textAlign: 'center', backgroundColor: '#0f172a', color: '#fff', textDecoration: 'none', padding: '10px', borderRadius: '6px', fontWeight: 'bold', fontSize: '14px', marginTop: '20px' }}>
+                  Subscribe Monthly ($49)
+                </a>
+              </div>
+
+              <div style={{ border: '2px solid #2563eb', borderRadius: '10px', padding: '20px', backgroundColor: '#eff6ff', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative' }}>
+                <span style={{ position: 'absolute', top: '-12px', right: '16px', backgroundColor: '#2563eb', color: '#fff', fontSize: '11px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '10px' }}>POPULAR</span>
+                <div>
+                  <h4 style={{ margin: '0 0 8px 0', fontSize: '18px', color: '#1e40af' }}>3-Month Pass</h4>
+                  <div style={{ fontSize: '28px', fontWeight: '800', color: '#1e40af', marginBottom: '12px' }}>$119 <span style={{ fontSize: '14px', fontWeight: 'normal', color: '#3b82f6' }}>one-time</span></div>
+                  <ul style={{ paddingLeft: '18px', margin: 0, fontSize: '13px', color: '#1e3a8a', lineHeight: '1.8' }}>
+                    <li>Everything in Monthly</li>
+                    <li>90 Days Full Access</li>
+                    <li>FREE Dedicated Lead Page</li>
+                    <li>Writable Promo Banner</li>
+                  </ul>
+                </div>
+                <a href="https://buy.stripe.com/test_3month" style={{ display: 'block', textAlign: 'center', backgroundColor: '#2563eb', color: '#fff', textDecoration: 'none', padding: '10px', borderRadius: '6px', fontWeight: 'bold', fontSize: '14px', marginTop: '20px' }}>
+                  Get 3-Month Pass ($119)
+                </a>
+              </div>
+
+              <div style={{ border: '1px solid #86efac', borderRadius: '10px', padding: '20px', backgroundColor: '#f0fdf4', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <div>
+                  <span style={{ backgroundColor: '#dcfce7', color: '#15803d', fontSize: '11px', fontWeight: 'bold', padding: '2px 6px', borderRadius: '4px' }}>BEST VALUE</span>
+                  <h4 style={{ margin: '8px 0 8px 0', fontSize: '18px', color: '#166534' }}>Annual VIP Pass</h4>
+                  <div style={{ fontSize: '28px', fontWeight: '800', color: '#166534', marginBottom: '12px' }}>$297 <span style={{ fontSize: '14px', fontWeight: 'normal', color: '#16a34a' }}>/year</span></div>
+                  <ul style={{ paddingLeft: '18px', margin: 0, fontSize: '13px', color: '#14532d', lineHeight: '1.8' }}>
+                    <li>Everything in 3-Month Pass</li>
+                    <li>Equivalent to $24.75/month</li>
+                    <li>VIP Setup Assistance</li>
+                  </ul>
+                </div>
+                <a href="https://buy.stripe.com/test_annual" style={{ display: 'block', textAlign: 'center', backgroundColor: '#166534', color: '#fff', textDecoration: 'none', padding: '10px', borderRadius: '6px', fontWeight: 'bold', fontSize: '14px', marginTop: '20px' }}>
+                  Get Annual VIP ($297)
+                </a>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      )}
+
+    </div>
+  );
+}
+
+// ==========================================
+// 3. PUBLIC MARKETING & STANDALONE PAGE
+// ==========================================
+export default function LocalPulseSaaS() {
+  const [businessName, setBusinessName] = useState('');
+  const [email, setEmail] = useState('');
+  const [activeUser, setActiveUser] = useState(null);
+  const [isStandalonePage, setIsStandalonePage] = useState(false);
+  const [standaloneReviews, setStandaloneReviews] = useState([]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const bName = params.get('business');
+    const uEmail = params.get('email');
+    const mode = params.get('mode');
+
+    if (mode === 'page' && bName) {
+      setIsStandalonePage(true);
+      setBusinessName(bName);
+
+      fetch('/api/google-reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ businessName: bName, googleUrl: bName })
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.reviews && data.reviews.length > 0) {
+            setStandaloneReviews(data.reviews);
+          }
+        })
+        .catch((err) => console.error("Standalone review fetch error:", err));
+
+      return;
+    }
+
+    if (bName && uEmail) {
+      setActiveUser({ businessName: bName, email: uEmail });
+    }
+  }, []);
+
+  if (isStandalonePage) {
+    return (
+      <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc', padding: '40px 20px', fontFamily: 'sans-serif' }}>
+        <div style={{ maxWidth: '420px', margin: '0 auto 16px auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <button 
+            onClick={() => window.history.back()} 
+            style={{ backgroundColor: 'transparent', border: 'none', color: '#2563eb', fontWeight: 'bold', fontSize: '13px', cursor: 'pointer', padding: 0 }}
+          >
+            ← Back to Control Panel
+          </button>
+          <span style={{ fontSize: '12px', color: '#64748b' }}>Powered by LocalPulse AI</span>
+        </div>
+        <LocalPulseWidget 
+          businessName={businessName} 
+          showPhotoAddon={true} 
+          specialOffer="Contact Us Today for Schedules & Details!" 
+          reviews={standaloneReviews}
+        />
+      </div>
+    );
+  }
+
+  if (activeUser) return <CustomerDashboard businessName={activeUser.businessName} email={activeUser.email} onLogout={() => setActiveUser(null)} />;
+
+  return (
+    <div style={{ minHeight: '100vh', backgroundColor: '#0f172a', color: '#f8fafc', fontFamily: 'sans-serif', padding: '40px 20px' }}>
+      <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
+        <div style={{ fontSize: '22px', fontWeight: '800', color: '#60a5fa' }}>LocalPulse AI</div>
+        <a href="#signup" style={{ backgroundColor: '#2563eb', color: '#fff', padding: '10px 20px', borderRadius: '8px', textDecoration: 'none', fontWeight: 'bold', fontSize: '14px' }}>Start 14-Day Free Trial</a>
+      </div>
+
+      <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+        <div style={{ textAlign: 'center', marginBottom: '60px' }}>
+          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '20px', background: 'linear-gradient(to right, #60a5fa, #a855f7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', lineHeight: '1.2' }}>
+            Turn Local Website Traffic Into High-Paying Clients
+          </h1>
+          <p style={{ fontSize: '19px', color: '#94a3b8', maxWidth: '750px', margin: '0 auto 40px auto', lineHeight: '1.6' }}>
+            Display verified 5-star Google reviews and an instant SMS quote request form on your existing website or dedicated AI lead page.
+          </p>
+
+          <div id="signup" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', alignItems: 'center', textAlign: 'left', backgroundColor: '#1e293b', padding: '40px', borderRadius: '16px', border: '1px solid #334155', boxShadow: '0 12px 32px rgba(0,0,0,0.3)' }}>
+            <div>
+              <h3 style={{ fontSize: '26px', margin: '0 0 8px 0', color: '#ffffff' }}>Activate Free Trial</h3>
+              <p style={{ color: '#94a3b8', fontSize: '15px', marginBottom: '24px' }}>No credit card required. Up and running in under 60 seconds.</p>
+              
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                const bInput = e.target.elements.bName.value;
+                const eInput = e.target.elements.eName.value;
+                setActiveUser({ businessName: bInput, email: eInput });
+              }} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div>
+                  <label style={{ fontSize: '14px', color: '#94a3b8', display: 'block', marginBottom: '6px' }}>Business Name & Location</label>
+                  <input 
+                    name="bName"
+                    type="text" 
+                    required 
+                    placeholder="e.g. Tatarus Gymnastics, Knoxville TN" 
+                    style={{ width: '100%', padding: '14px', borderRadius: '8px', border: '1px solid #475569', backgroundColor: '#0f172a', color: '#fff', fontSize: '16px', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '14px', color: '#94a3b8', display: 'block', marginBottom: '6px' }}>Work Email Address</label>
+                  <input 
+                    name="eName"
+                    type="email" 
+                    required 
+                    placeholder="owner@yourbusiness.com" 
+                    style={{ width: '100%', padding: '14px', borderRadius: '8px', border: '1px solid #475569', backgroundColor: '#0f172a', color: '#fff', fontSize: '16px', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <button type="submit" style={{ width: '100%', padding: '16px', backgroundColor: '#2563eb', color: '#fff', fontWeight: 'bold', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '16px' }}>
+                  Launch My Control Panel →
+                </button>
+              </form>
+            </div>
+
+            <div>
+              <div style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', color: '#64748b', fontWeight: 'bold', marginBottom: '12px', textAlign: 'center' }}>Live Output Preview</div>
+              <LocalPulseWidget 
+                businessName={"Tatarus Gymnastics"} 
+                showPhotoAddon={true} 
+                specialOffer="10% Off First Month Registration!" 
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
