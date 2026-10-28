@@ -6,7 +6,6 @@ export async function POST(req) {
     const { email } = await req.json();
     if (!email) return Response.json({ isVip: false });
 
-    // Read the secure VIP config file
     const filePath = path.join(process.cwd(), 'config', 'vip-passes.json');
     if (!fs.existsSync(filePath)) {
       return Response.json({ isVip: false });
@@ -14,13 +13,12 @@ export async function POST(req) {
 
     const fileData = fs.readFileSync(filePath, 'utf8');
     const vipPasses = JSON.parse(fileData);
-
     const userPass = vipPasses[email.toLowerCase().trim()];
+
     if (!userPass) {
       return Response.json({ isVip: false });
     }
 
-    // Check if pass has expired
     const currentDate = new Date();
     const expiryDate = new Date(userPass.expiresAt);
 
