@@ -211,7 +211,7 @@ function CustomerDashboard({ businessName, email, onLogout }) {
   const handleSync = async () => {
     const searchQuery = googleUrl || activeName;
     if (!searchQuery) {
-      alert("Please enter your business name and city (e.g., 'Tatarus Gymnastics, Knoxville TN') first!");
+      alert("Please enter your business name and city first!");
       return;
     }
     
@@ -561,10 +561,11 @@ export default function LocalPulseSaaS() {
       setIsStandalonePage(true);
       setBusinessName(bName);
 
+      // Fetch live reviews specifically for the requested business name in the URL
       fetch('/api/google-reviews', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ businessName: bName })
+        body: JSON.stringify({ businessName: bName, googleUrl: bName })
       })
         .then((res) => res.json())
         .then((data) => {
@@ -608,12 +609,72 @@ export default function LocalPulseSaaS() {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#0f172a', color: '#f8fafc', fontFamily: 'sans-serif', padding: '40px 20px' }}>
-      <div style={{ maxWidth: '1100px', margin: '0 auto', textAlign: 'center', paddingTop: '100px' }}>
-        <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '16px' }}>LocalPulse AI</h1>
-        <p style={{ fontSize: '18px', color: '#94a3b8', marginBottom: '30px' }}>Turn local website traffic into loyal clients with verified Google reviews.</p>
-        <button onClick={() => setActiveUser({ businessName: 'Tatarus Gymnastics', email: 'owner@tatarusgymnastics.com' })} style={{ padding: '14px 28px', backgroundColor: '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
-          Launch Dashboard →
-        </button>
+      
+      {/* Top Navbar */}
+      <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
+        <div style={{ fontSize: '22px', fontWeight: '800', color: '#60a5fa' }}>LocalPulse AI</div>
+        <a href="#signup" style={{ backgroundColor: '#2563eb', color: '#fff', padding: '10px 20px', borderRadius: '8px', textDecoration: 'none', fontWeight: 'bold', fontSize: '14px' }}>Start 14-Day Free Trial</a>
+      </div>
+
+      <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+        
+        {/* Hero Section */}
+        <div style={{ textAlign: 'center', marginBottom: '60px' }}>
+          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '20px', background: 'linear-gradient(to right, #60a5fa, #a855f7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', lineHeight: '1.2' }}>
+            Turn Local Website Traffic Into High-Paying Clients
+          </h1>
+          <p style={{ fontSize: '19px', color: '#94a3b8', maxWidth: '750px', margin: '0 auto 40px auto', lineHeight: '1.6' }}>
+            Display verified 5-star Google reviews and an instant SMS quote request form on your existing website or dedicated AI lead page.
+          </p>
+
+          <div id="signup" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', alignItems: 'center', textAlign: 'left', backgroundColor: '#1e293b', padding: '40px', borderRadius: '16px', border: '1px solid #334155', boxShadow: '0 12px 32px rgba(0,0,0,0.3)' }}>
+            <div>
+              <h3 style={{ fontSize: '26px', margin: '0 0 8px 0', color: '#ffffff' }}>Activate Free Trial</h3>
+              <p style={{ color: '#94a3b8', fontSize: '15px', marginBottom: '24px' }}>No credit card required. Up and running in under 60 seconds.</p>
+              
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                const bInput = e.target.elements.bName.value;
+                const eInput = e.target.elements.eName.value;
+                setActiveUser({ businessName: bInput, email: eInput });
+              }} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div>
+                  <label style={{ fontSize: '14px', color: '#94a3b8', display: 'block', marginBottom: '6px' }}>Business Name</label>
+                  <input 
+                    name="bName"
+                    type="text" 
+                    required 
+                    placeholder="e.g. Tatarus Gymnastics, Knoxville TN" 
+                    style={{ width: '100%', padding: '14px', borderRadius: '8px', border: '1px solid #475569', backgroundColor: '#0f172a', color: '#fff', fontSize: '16px', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '14px', color: '#94a3b8', display: 'block', marginBottom: '6px' }}>Work Email Address</label>
+                  <input 
+                    name="eName"
+                    type="email" 
+                    required 
+                    placeholder="owner@yourbusiness.com" 
+                    style={{ width: '100%', padding: '14px', borderRadius: '8px', border: '1px solid #475569', backgroundColor: '#0f172a', color: '#fff', fontSize: '16px', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <button type="submit" style={{ width: '100%', padding: '16px', backgroundColor: '#2563eb', color: '#fff', fontWeight: 'bold', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '16px' }}>
+                  Launch My Control Panel →
+                </button>
+              </form>
+            </div>
+
+            <div>
+              <div style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', color: '#64748b', fontWeight: 'bold', marginBottom: '12px', textAlign: 'center' }}>Live Output Preview</div>
+              <LocalPulseWidget 
+                businessName={"Tatarus Gymnastics"} 
+                showPhotoAddon={true} 
+                specialOffer="10% Off First Month Registration!" 
+              />
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   );
