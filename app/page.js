@@ -9,11 +9,9 @@ import React, { useState, useEffect } from 'react';
 // ==========================================
 export function LocalPulseWidget({ 
   businessName, 
-  primaryColor = '#2563eb', 
   showPhotoAddon = true,
-  specialOffer = '',
+  specialOffer = 'Enter your email below for more information',
   customLogo = '',
-  ctaText = 'Send Us a Direct Message:',
   reviews = [],
   onLeadCaptured
 }) {
@@ -32,6 +30,7 @@ export function LocalPulseWidget({
 
   const [expandedReviews, setExpandedReviews] = useState(false);
   const [leadQuestion, setLeadQuestion] = useState('');
+  const [leadEmail, setLeadEmail] = useState('');
   const [leadPhone, setLeadPhone] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -45,8 +44,8 @@ export function LocalPulseWidget({
 
   const handleLeadSubmit = async (e) => {
     e.preventDefault();
-    if (!leadQuestion || !leadPhone) {
-      alert("Please enter both your message/inquiry and phone number!");
+    if (!leadQuestion || (!leadPhone && !leadEmail)) {
+      alert("Please enter your inquiry and at least one contact method (Email or Phone)!");
       return;
     }
     
@@ -56,7 +55,7 @@ export function LocalPulseWidget({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          leadText: `Inquiry: ${leadQuestion} | Phone: ${leadPhone}`, 
+          leadText: `Inquiry: ${leadQuestion} | Email: ${leadEmail} | Phone: ${leadPhone}`, 
           businessName 
         })
       });
@@ -89,16 +88,10 @@ export function LocalPulseWidget({
 
       <div style={{ padding: '20px' }}>
         
-        {!showPhotoAddon && (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-            <h4 style={{ margin: 0, fontSize: '18px', color: '#0f172a' }}>{businessName || 'Your Business Name'}</h4>
-            <span style={{ backgroundColor: '#fef3c7', color: '#d97706', fontSize: '12px', fontWeight: 'bold', padding: '4px 10px', borderRadius: '12px' }}>★ Highly Rated</span>
-          </div>
-        )}
-
+        {/* Custom Writable Info/Promo Banner */}
         {specialOffer && (
           <div style={{ backgroundColor: '#eff6ff', border: '1px dashed #2563eb', borderRadius: '8px', padding: '12px', marginBottom: '16px', color: '#1e40af', fontSize: '13px', textAlign: 'center', fontWeight: '600' }}>
-            🎁 <strong>Special Promotion:</strong> {specialOffer}
+            ℹ️ {specialOffer}
           </div>
         )}
 
@@ -123,11 +116,12 @@ export function LocalPulseWidget({
           </button>
         )}
 
+        {/* Lead Capture Form with Phone and Email Contact Options */}
         <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '14px' }}>
-          <p style={{ margin: '0 0 8px 0', fontSize: '14px', fontWeight: '600', color: '#0f172a' }}>{ctaText || 'Send Us a Direct Message:'}</p>
+          <p style={{ margin: '0 0 8px 0', fontSize: '14px', fontWeight: '600', color: '#0f172a' }}>Send Us a Direct Message:</p>
           {submitted ? (
             <div style={{ color: '#16a34a', backgroundColor: '#f0fdf4', padding: '12px', borderRadius: '6px', fontSize: '13px', fontWeight: '500', textAlign: 'center' }}>
-              ✓ Thank you! We have received your message and will text you shortly at {leadPhone}.
+              ✓ Thank you! We have received your inquiry and will follow up with you shortly.
             </div>
           ) : (
             <form onSubmit={handleLeadSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -138,20 +132,27 @@ export function LocalPulseWidget({
                 onChange={(e) => setLeadQuestion(e.target.value)}
                 style={{ padding: '10px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }}
               />
+              <input 
+                type="email" 
+                placeholder="Your Email Address" 
+                value={leadEmail}
+                onChange={(e) => setLeadEmail(e.target.value)}
+                style={{ padding: '10px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+              />
               <div style={{ display: 'flex', gap: '6px' }}>
                 <input 
                   type="tel" 
-                  placeholder="Cell Phone #" 
+                  placeholder="Cell Phone # (Optional)" 
                   value={leadPhone}
                   onChange={(e) => setLeadPhone(e.target.value)}
                   style={{ flex: 1, padding: '10px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }}
                 />
-                <button type="submit" disabled={loading} style={{ backgroundColor: primaryColor, color: '#fff', border: 'none', borderRadius: '6px', padding: '10px 14px', fontSize: '13px', cursor: 'pointer', fontWeight: '600' }}>
+                <button type="submit" disabled={loading} style={{ backgroundColor: '#2563eb', color: '#fff', border: 'none', borderRadius: '6px', padding: '10px 14px', fontSize: '13px', cursor: 'pointer', fontWeight: '600' }}>
                   {loading ? '...' : 'Send'}
                 </button>
               </div>
               <span style={{ fontSize: '10px', color: '#94a3b8', lineHeight: '1.2' }}>
-                By submitting your phone number, you agree to receive SMS alerts. Msg & data rates may apply.
+                By submitting your contact info, you agree to receive communications. Msg & data rates may apply.
               </span>
             </form>
           )}
@@ -167,14 +168,11 @@ export function LocalPulseWidget({
 // ==========================================
 function CustomerDashboard({ businessName, email, onLogout }) {
   const [googleUrl, setGoogleUrl] = useState('');
-  const [widgetColor, setWidgetColor] = useState(() => localStorage.getItem('lp_color') || '#2563eb');
-  const [specialOffer, setSpecialOffer] = useState(() => localStorage.getItem('lp_offer') || 'Special Offer: Contact Us Today!');
-  const [ctaText, setCtaText] = useState(() => localStorage.getItem('lp_cta') || 'Send Us a Direct Message:');
+  const [specialOffer, setSpecialOffer] = useState(() => localStorage.getItem('lp_offer') || 'Enter your email below for more information');
   const [copiedCode, setCopiedCode] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [synced, setSynced] = useState(false);
   const [syncing, setSyncing] = useState(false);
-  const [showPhotoAddon, setShowPhotoAddon] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   const [timeframe, setTimeframe] = useState('month');
   
@@ -211,12 +209,10 @@ function CustomerDashboard({ businessName, email, onLogout }) {
   }, [email]);
 
   useEffect(() => {
-    localStorage.setItem('lp_color', widgetColor);
     localStorage.setItem('lp_offer', specialOffer);
-    localStorage.setItem('lp_cta', ctaText);
     localStorage.setItem('lp_views', views);
     localStorage.setItem('lp_leads_count', leadsCount);
-  }, [widgetColor, specialOffer, ctaText, views, leadsCount]);
+  }, [specialOffer, views, leadsCount]);
 
   const handleResetMetrics = () => {
     if (confirm("Are you sure you want to reset your impression and lead analytics counters to zero?")) {
@@ -250,7 +246,7 @@ function CustomerDashboard({ businessName, email, onLogout }) {
         localStorage.setItem('lp_reviews', JSON.stringify(data.reviews));
         setSynced(true);
       } else {
-        alert(`Sync Notice: ${data.error || 'Could not retrieve reviews. Please check your spelling or Google link.'}`);
+        alert(`Sync Result: ${data.error || 'No Results Found.'}`);
       }
     } catch (err) {
       alert(`Network Error: ${err.message}`);
@@ -306,7 +302,7 @@ function CustomerDashboard({ businessName, email, onLogout }) {
         <button onClick={onLogout} style={{ padding: '8px 16px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#fff', cursor: 'pointer', fontSize: '13px' }}>Log Out</button>
       </div>
 
-      {/* Performance Analytics Bar */}
+      {/* Analytics Overview */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
         <h3 style={{ margin: 0, fontSize: '16px', color: '#0f172a' }}>Performance Analytics Overview</h3>
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
@@ -362,7 +358,6 @@ function CustomerDashboard({ businessName, email, onLogout }) {
 
       {activeTab === 'overview' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          
           <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
             <h3 style={{ margin: '0 0 8px 0', fontSize: '18px' }}>1. Connect Google Business Profile</h3>
             <p style={{ margin: '0 0 12px 0', fontSize: '14px', color: '#64748b' }}>
@@ -406,10 +401,9 @@ function CustomerDashboard({ businessName, email, onLogout }) {
             <h3 style={{ margin: '0 0 8px 0', fontSize: '18px' }}>2. Choose Deployment Option</h3>
             
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '16px' }}>
-              
               <div style={{ border: '1px solid #e2e8f0', padding: '16px', borderRadius: '8px', backgroundColor: '#f8fafc' }}>
                 <h4 style={{ margin: '0 0 6px 0', color: '#0f172a' }}>Option A: Website Embed iframe Code</h4>
-                <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 12px 0' }}>Paste this iframe snippet into your website (immune to style conflicts):</p>
+                <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 12px 0' }}>Paste this iframe snippet into your website:</p>
                 
                 <textarea 
                   readOnly
@@ -447,24 +441,22 @@ function CustomerDashboard({ businessName, email, onLogout }) {
                   </a>
                 </div>
               </div>
-
             </div>
           </div>
-
         </div>
       )}
 
       {activeTab === 'inbox' && (
         <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
           <h3 style={{ margin: '0 0 16px 0', fontSize: '18px', color: '#0f172a' }}>Captured Lead Activity Inbox</h3>
-          <p style={{ color: '#64748b', fontSize: '14px', margin: '0 0 20px 0' }}>All inquiries entered through your widget or standalone page are listed below and dispatched immediately to your email/SMS:</p>
+          <p style={{ color: '#64748b', fontSize: '14px', margin: '0 0 20px 0' }}>All inquiries entered through your widget or standalone page are listed below:</p>
 
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '14px' }}>
               <thead>
                 <tr style={{ backgroundColor: '#f8fafc', borderBottom: '2px solid #e2e8f0', color: '#475569' }}>
                   <th style={{ padding: '12px' }}>Date</th>
-                  <th style={{ padding: '12px' }}>Customer Phone</th>
+                  <th style={{ padding: '12px' }}>Customer Contact</th>
                   <th style={{ padding: '12px' }}>Inquiry Details</th>
                   <th style={{ padding: '12px' }}>Status</th>
                 </tr>
@@ -488,41 +480,26 @@ function CustomerDashboard({ businessName, email, onLogout }) {
         </div>
       )}
 
+      {/* Tab 3: Customizer Cleaned of Accent Color Button */}
       {activeTab === 'customize' && (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
           <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-            <h3 style={{ margin: '0 0 16px 0', fontSize: '18px' }}>Writable Announcement & Headline Controls</h3>
-            
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', fontSize: '14px', fontWeight: 'bold', color: '#334155', marginBottom: '6px' }}>Call To Action Box Heading</label>
-              <input 
-                type="text" 
-                placeholder="e.g. Send Us a Direct Message:" 
-                value={ctaText} 
-                onChange={(e) => setCtaText(e.target.value)}
-                style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '14px', boxSizing: 'border-box' }}
-              />
-            </div>
+            <h3 style={{ margin: '0 0 16px 0', fontSize: '18px' }}>Promo Banner & Announcement Text</h3>
 
             <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', fontSize: '14px', fontWeight: 'bold', color: '#334155', marginBottom: '6px' }}>Special Offer Announcement Banner</label>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: 'bold', color: '#334155', marginBottom: '6px' }}>
+                Banner Announcement Text
+              </label>
               <input 
                 type="text" 
-                placeholder="e.g. Free Trial Class or 10% Off First Month!" 
+                placeholder="Enter your email below for more information" 
                 value={specialOffer} 
                 onChange={(e) => setSpecialOffer(e.target.value)}
                 style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '14px', boxSizing: 'border-box' }}
               />
-            </div>
-
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', fontSize: '14px', fontWeight: 'bold', color: '#334155', marginBottom: '6px' }}>Accent Button Color</label>
-              <input 
-                type="color" 
-                value={widgetColor} 
-                onChange={(e) => setWidgetColor(e.target.value)}
-                style={{ width: '60px', height: '40px', border: 'none', cursor: 'pointer', borderRadius: '4px' }}
-              />
+              <p style={{ fontSize: '12px', color: '#64748b', marginTop: '6px' }}>
+                This banner text appears at the top of your Google review widget.
+              </p>
             </div>
           </div>
 
@@ -530,10 +507,8 @@ function CustomerDashboard({ businessName, email, onLogout }) {
             <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase', marginBottom: '8px', textAlign: 'center' }}>Live Output Preview</div>
             <LocalPulseWidget 
               businessName={activeName} 
-              primaryColor={widgetColor} 
-              showPhotoAddon={showPhotoAddon} 
+              showPhotoAddon={true} 
               specialOffer={specialOffer}
-              ctaText={ctaText}
               reviews={liveReviews}
             />
           </div>
@@ -546,13 +521,12 @@ function CustomerDashboard({ businessName, email, onLogout }) {
             <h3 style={{ margin: '0 0 16px 0', fontSize: '20px', color: '#0f172a' }}>Subscription Plans</h3>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px' }}>
-              
               <div style={{ border: '1px solid #cbd5e1', borderRadius: '10px', padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                 <div>
                   <h4 style={{ margin: '0 0 8px 0', fontSize: '18px', color: '#0f172a' }}>Monthly Standard</h4>
                   <div style={{ fontSize: '28px', fontWeight: '800', color: '#0f172a', marginBottom: '12px' }}>$49 <span style={{ fontSize: '14px', fontWeight: 'normal', color: '#64748b' }}>/mo</span></div>
                   <ul style={{ paddingLeft: '18px', margin: 0, fontSize: '13px', color: '#475569', lineHeight: '1.8' }}>
-                    <li>Review & SMS Quote Widget</li>
+                    <li>Review & Email/SMS Quote Widget</li>
                     <li>Website iframe Embed</li>
                     <li>Dedicated AI Lead Page Link</li>
                     <li>Instant Email Lead Alerts</li>
@@ -595,10 +569,8 @@ function CustomerDashboard({ businessName, email, onLogout }) {
                   Get Annual VIP ($297)
                 </a>
               </div>
-
             </div>
           </div>
-
         </div>
       )}
 
@@ -662,7 +634,7 @@ export default function LocalPulseSaaS() {
         <LocalPulseWidget 
           businessName={businessName} 
           showPhotoAddon={true} 
-          specialOffer="Contact Us Today for Schedules & Details!" 
+          specialOffer="Enter your email below for more information" 
           reviews={standaloneReviews}
         />
       </div>
@@ -684,11 +656,16 @@ export default function LocalPulseSaaS() {
             Turn Local Website Traffic Into High-Paying Clients
           </h1>
           <p style={{ fontSize: '19px', color: '#94a3b8', maxWidth: '750px', margin: '0 auto 40px auto', lineHeight: '1.6' }}>
-            Display verified 5-star Google reviews and an instant SMS quote request form on your existing website or dedicated AI lead page.
+            Display verified 5-star Google reviews and an instant quote request form on your existing website or dedicated AI lead page.
           </p>
 
           <div id="signup" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', alignItems: 'center', textAlign: 'left', backgroundColor: '#1e293b', padding: '40px', borderRadius: '16px', border: '1px solid #334155', boxShadow: '0 12px 32px rgba(0,0,0,0.3)' }}>
             <div>
+              {/* Separate Header Banner above Activate Free Trial */}
+              <div style={{ backgroundColor: '#2563eb', color: '#ffffff', padding: '8px 14px', borderRadius: '6px', fontSize: '13px', fontWeight: 'bold', textAlign: 'center', marginBottom: '16px' }}>
+                🎁 Free 14 day trial - Try Now!
+              </div>
+
               <h3 style={{ fontSize: '26px', margin: '0 0 8px 0', color: '#ffffff' }}>Activate Free Trial</h3>
               <p style={{ color: '#94a3b8', fontSize: '15px', marginBottom: '24px' }}>No credit card required. Up and running in under 60 seconds.</p>
               
@@ -729,7 +706,7 @@ export default function LocalPulseSaaS() {
               <LocalPulseWidget 
                 businessName={"Tatarus Gymnastics"} 
                 showPhotoAddon={true} 
-                specialOffer="10% Off First Month Registration!" 
+                specialOffer="Enter your email below for more information" 
               />
             </div>
           </div>
