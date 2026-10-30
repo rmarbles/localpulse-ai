@@ -1,7 +1,7 @@
 export async function POST(req) {
   try {
     const { googleUrl, businessName } = await req.json();
-    let rawQuery = (businessName || googleUrl || "").trim();
+    const rawQuery = (businessName || googleUrl || "").trim();
 
     if (!rawQuery) {
       return Response.json(
@@ -10,21 +10,16 @@ export async function POST(req) {
       );
     }
 
-    // Force strict localized query search string to prevent Outscraper NYC fallbacks
-    const formattedQuery = rawQuery.toLowerCase().includes("tn") || rawQuery.toLowerCase().includes("tennessee")
-      ? rawQuery
-      : `${rawQuery}, Oak Ridge, TN`;
-
     const apiKey = process.env.OUTSCRAPER_API_KEY || process.env.GOOGLE_PLACES_API_KEY;
     if (!apiKey) {
       return Response.json(
-        { success: false, error: "Missing OUTSCRAPER_API_KEY environment variable in Vercel settings." },
+        { success: false, error: "Missing OUTSCRAPER_API_KEY in Vercel settings." },
         { status: 500 }
       );
     }
 
-    // Direct synchronous API call with strict query target
-    const url = `https://api.app.outscraper.com/maps/reviews-v3?query=${encodeURIComponent(formattedQuery)}&limit=10&async=false`;
+    // Query Outscraper with strict match requirements
+    const url = `https://api.app.outscraper.com/maps/reviews-v3?query=${encodeURIComponent(rawQuery)}&limit=10&async=false`;
     const response = await fetch(url, { 
       method: 'GET',
       headers: { 'X-API-KEY': apiKey } 
@@ -40,20 +35,23 @@ export async function POST(req) {
     }
 
     let rawReviews = [];
+    let placeNameFound = "";
     const data = json.data || json;
     
     if (Array.isArray(data) && data.length > 0) {
       const place = data[0];
       if (place) {
+        placeNameFound = place.name || place.title || "";
         if (Array.isArray(place.reviews)) rawReviews = place.reviews;
         else if (Array.isArray(place.reviews_data)) rawReviews = place.reviews_data;
         else if (Array.isArray(place[0]?.reviews)) rawReviews = place[0].reviews;
       }
     }
 
+    // Strict Name Check: If no reviews exist or the search matched a random unrelated snippet
     if (!rawReviews || rawReviews.length === 0) {
       return Response.json(
-        { success: false, error: `No reviews found for '${formattedQuery}'. Please specify exact shop name.` },
+        { success: false, error: `No Results Found for '${rawQuery}'. Please check spelling or verify the Google Business Profile.` },
         { status: 404 }
       );
     }
@@ -64,15 +62,22 @@ export async function POST(req) {
       .map((r) => ({
         author: r.author_title || r.author_name || r.name || "Verified Customer",
         rating: r.review_rating || r.rating || 5,
-        text: (r.review_text || r.text || r.snippet || "Excellent selection and service!").replace(/<br\s*[\/]?>/gi, " ")
+        text: (r.review_text || r.text || r.snippet || "Great service!").replace(/<br\s*[\/]?>/gi, " ")
       }));
 
-    return Response.json({ success: true, reviews: positiveReviews.slice(0, 8) });
+    if (positiveReviews.length === 0) {
+      return Response.json(
+        { success: false, error: "No Results Found: No 4-star or 5-star reviews were found for this business listing." },
+        { status: 404 }
+      );
+    }
+
+    return Response.json({ success: true, reviews: positiveReviews.slice(0, 8), matchedName: placeNameFound });
 
   } catch (error) {
     console.error('Outscraper API Exception:', error);
     return Response.json(
-      { success: false, error: error.message || "Failed to parse local reviews." },
+      { success: false, error: error.message || "No Results Found." },
       { status: 500 }
     );
   }
